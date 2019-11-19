@@ -1,0 +1,84 @@
+<p>非递归：<br>
+算法核心是：后一个节点指向前一个节点，循环实现</p>
+<pre><code class="prism language-java"><span class="token keyword">package</span> algorithms_4th<span class="token punctuation">;</span>
+
+
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Linked_list</span> <span class="token punctuation">{</span>
+	Node first<span class="token operator">=</span>null<span class="token punctuation">;</span>
+	<span class="token keyword">static</span> <span class="token keyword">class</span> <span class="token class-name">Node</span> <span class="token punctuation">{</span>
+		<span class="token keyword">int</span> v<span class="token punctuation">;</span>
+		Node next<span class="token operator">=</span>null<span class="token punctuation">;</span>
+		
+		<span class="token keyword">public</span>  <span class="token function">Node</span><span class="token punctuation">(</span><span class="token keyword">int</span> v<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			<span class="token keyword">this</span><span class="token punctuation">.</span>v<span class="token operator">=</span>v<span class="token punctuation">;</span>
+		<span class="token punctuation">}</span>
+		
+	<span class="token punctuation">}</span>
+	<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">InsertNode</span><span class="token punctuation">(</span>Node node<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token keyword">if</span> <span class="token punctuation">(</span>node<span class="token operator">!=</span>null<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			<span class="token keyword">if</span><span class="token punctuation">(</span>first<span class="token operator">==</span>null<span class="token punctuation">)</span> <span class="token punctuation">{</span>first<span class="token operator">=</span>node<span class="token punctuation">;</span><span class="token keyword">return</span><span class="token punctuation">;</span><span class="token punctuation">}</span>
+			Node nodeTem<span class="token operator">=</span>first<span class="token punctuation">;</span>
+			<span class="token keyword">while</span><span class="token punctuation">(</span>nodeTem<span class="token punctuation">.</span>next<span class="token operator">!=</span>null<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+				nodeTem<span class="token operator">=</span>nodeTem<span class="token punctuation">.</span>next<span class="token punctuation">;</span>
+			<span class="token punctuation">}</span>
+			nodeTem<span class="token punctuation">.</span>next<span class="token operator">=</span>node<span class="token punctuation">;</span>
+		<span class="token punctuation">}</span>
+	<span class="token punctuation">}</span>
+	<span class="token keyword">public</span> <span class="token keyword">void</span> <span class="token function">ReverseList</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token keyword">if</span><span class="token punctuation">(</span>first<span class="token operator">==</span>null<span class="token punctuation">)</span><span class="token keyword">return</span><span class="token punctuation">;</span>
+		Node cur_node<span class="token operator">=</span>first<span class="token punctuation">;</span>
+		Node tem<span class="token punctuation">;</span>
+		Node pre_node<span class="token operator">=</span>null<span class="token punctuation">;</span>
+		<span class="token keyword">while</span><span class="token punctuation">(</span>cur_node<span class="token operator">!=</span>null<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			tem<span class="token operator">=</span>cur_node<span class="token punctuation">.</span>next<span class="token punctuation">;</span><span class="token comment">//store current.next</span>
+			
+			cur_node<span class="token punctuation">.</span>next<span class="token operator">=</span>pre_node<span class="token punctuation">;</span><span class="token comment">//back forward</span>
+			
+			pre_node<span class="token operator">=</span>cur_node<span class="token punctuation">;</span><span class="token comment">//next recycle precondition</span>
+			cur_node<span class="token operator">=</span>tem<span class="token punctuation">;</span>
+			
+			
+			
+			
+		<span class="token punctuation">}</span>
+		first<span class="token operator">=</span>pre_node<span class="token punctuation">;</span>
+		
+		
+		
+	<span class="token punctuation">}</span>
+	<span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span>String<span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token comment">// TODO Auto-generated method stub</span>
+		Linked_list list<span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Linked_list</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			
+			list<span class="token punctuation">.</span><span class="token function">InsertNode</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Node</span><span class="token punctuation">(</span>i<span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		<span class="token punctuation">}</span>
+		Node node<span class="token operator">=</span>list<span class="token punctuation">.</span>first<span class="token punctuation">;</span>
+		<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			
+			System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span>node<span class="token punctuation">.</span>v<span class="token operator">+</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+			node<span class="token operator">=</span>node<span class="token punctuation">.</span>next<span class="token punctuation">;</span>
+			
+		<span class="token punctuation">}</span>
+		System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		
+		
+		list<span class="token punctuation">.</span><span class="token function">ReverseList</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+		node<span class="token operator">=</span>list<span class="token punctuation">.</span>first<span class="token punctuation">;</span>
+
+		<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">4</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+			
+			System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span>node<span class="token punctuation">.</span>v<span class="token operator">+</span> <span class="token string">" "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+			node<span class="token operator">=</span>node<span class="token punctuation">.</span>next<span class="token punctuation">;</span>
+			
+		<span class="token punctuation">}</span>
+		
+		
+	<span class="token punctuation">}</span>
+
+<span class="token punctuation">}</span>
+
+
+</code></pre>
+

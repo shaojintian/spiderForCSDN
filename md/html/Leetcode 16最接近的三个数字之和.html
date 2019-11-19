@@ -1,0 +1,40 @@
+<p><img src="https://img-blog.csdnimg.cn/2019040811124447.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+方法一：暴力遍历</p>
+<pre><code class="prism language-cpp"><span class="token comment">//cpp</span>
+<span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token keyword">int</span> <span class="token function">threeSumClosest</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> nums<span class="token punctuation">,</span> <span class="token keyword">int</span> target<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">sort</span><span class="token punctuation">(</span>nums<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>nums<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>nums<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">3</span> <span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> gap<span class="token operator">=</span>INT_MAX<span class="token punctuation">;</span>
+        <span class="token keyword">int</span> ans<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>nums<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">2</span><span class="token punctuation">;</span><span class="token operator">++</span>i<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>i<span class="token operator">&gt;</span><span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">==</span>nums<span class="token punctuation">[</span>i<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            
+            <span class="token keyword">int</span> j<span class="token operator">=</span>i<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">,</span>k<span class="token operator">=</span>nums<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token keyword">while</span><span class="token punctuation">(</span>j<span class="token operator">&lt;</span>k<span class="token punctuation">)</span>
+            <span class="token punctuation">{</span>   <span class="token keyword">int</span> now <span class="token operator">=</span> nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">+</span>nums<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token operator">+</span>nums<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token punctuation">;</span>
+                <span class="token keyword">if</span><span class="token punctuation">(</span>now <span class="token operator">==</span> target<span class="token punctuation">)</span> <span class="token keyword">return</span> target<span class="token punctuation">;</span>
+                <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">abs</span><span class="token punctuation">(</span>now <span class="token operator">-</span>target<span class="token punctuation">)</span> <span class="token operator">&lt;</span> gap<span class="token punctuation">)</span>
+                <span class="token punctuation">{</span>
+                    gap<span class="token operator">=</span><span class="token function">abs</span><span class="token punctuation">(</span>now <span class="token operator">-</span>target<span class="token punctuation">)</span> <span class="token punctuation">;</span>
+                    ans<span class="token operator">=</span>now<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span><span class="token punctuation">(</span>now <span class="token operator">&gt;</span> target <span class="token punctuation">)</span> <span class="token operator">--</span>k<span class="token punctuation">;</span>
+                <span class="token keyword">else</span> <span class="token operator">++</span>j<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            
+            
+            
+        <span class="token punctuation">}</span>
+        
+        <span class="token keyword">return</span> ans<span class="token punctuation">;</span>
+        
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p>固定一个数字，双指针，左右逼近，定一个gap为目前距离target的最小距离<br>
+更新gap到最小即为最接近的数字。</p>
+<p><img src="https://img-blog.csdnimg.cn/20190408112715354.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="![">在这里插入图片描述](<a href="https://img-blog.csdnimg.cn/20190408111100285.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70">https://img-blog.csdnimg.cn/20190408111100285.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70</a>)</p>
+

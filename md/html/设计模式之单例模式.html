@@ -1,0 +1,20 @@
+<p>单例模式：<br>
+确保每一个类只有一个实例</p>
+<p>优点：唯一受控访问<br>
+缺点：难以扩展</p>
+<pre><code class="prism language-java"><span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Singleton</span> <span class="token punctuation">{</span>
+	
+	
+	<span class="token keyword">private</span>  <span class="token keyword">static</span> Singleton instance <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Singleton</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	
+	<span class="token keyword">private</span> <span class="token function">Singleton</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>
+	
+	 <span class="token keyword">private</span>  <span class="token keyword">synchronized</span> <span class="token keyword">static</span> Singleton <span class="token function">getInstance</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		
+		
+		<span class="token keyword">return</span> instance<span class="token punctuation">;</span>
+	<span class="token punctuation">}</span>
+	
+<span class="token punctuation">}</span>
+</code></pre>
+

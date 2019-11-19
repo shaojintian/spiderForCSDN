@@ -1,0 +1,39 @@
+<p><img src="https://img-blog.csdnimg.cn/20190406200617644.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-cpp"><span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token keyword">int</span> <span class="token function">reverse</span><span class="token punctuation">(</span><span class="token keyword">int</span> x<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">//only &lt; 10</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>x<span class="token operator">/</span><span class="token number">10</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">return</span> x<span class="token punctuation">;</span>
+        <span class="token keyword">bool</span> flag<span class="token operator">=</span><span class="token boolean">true</span><span class="token punctuation">;</span>
+        <span class="token keyword">long</span> xx<span class="token operator">=</span>x<span class="token punctuation">;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>x<span class="token operator">&lt;</span><span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>   
+            xx<span class="token operator">*</span><span class="token operator">=</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+            flag<span class="token operator">=</span><span class="token boolean">false</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">long</span> ans <span class="token operator">=</span><span class="token number">0</span> <span class="token punctuation">;</span>
+        
+        <span class="token keyword">while</span><span class="token punctuation">(</span>xx <span class="token operator">!=</span> <span class="token number">0</span> <span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>   <span class="token keyword">if</span><span class="token punctuation">(</span>ans<span class="token operator">*</span><span class="token number">10</span><span class="token operator">+</span>xx<span class="token operator">%</span><span class="token number">10</span> <span class="token operator">&gt;</span> INT_MAX<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+            ans<span class="token operator">=</span>ans<span class="token operator">*</span><span class="token number">10</span><span class="token operator">+</span>xx<span class="token operator">%</span><span class="token number">10</span><span class="token punctuation">;</span>
+            xx<span class="token operator">=</span>xx<span class="token operator">/</span><span class="token number">10</span><span class="token punctuation">;</span>
+            
+        <span class="token punctuation">}</span>
+        
+        
+        <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>flag<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+           ans<span class="token operator">=</span>ans<span class="token operator">*</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token punctuation">}</span>
+        
+        
+        <span class="token keyword">return</span> ans<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/20190406200600678.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>range int [-2^31     ,   2^31 -1]</p>
+<p>like reverse  -2^31   --------&gt; 2^31   ,that doesn’t work  .</p>
+<p>so we need to use <mark>long</mark> to store x</p>
+<p>INT_MAX  —&gt;2^31 -1</p>
+

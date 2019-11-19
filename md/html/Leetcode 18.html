@@ -1,0 +1,60 @@
+<p><img src="https://img-blog.csdnimg.cn/20190408170718909.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-cpp"><span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> <span class="token function">fourSum</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> nums<span class="token punctuation">,</span> <span class="token keyword">int</span> target<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+       
+        vector<span class="token operator">&lt;</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;&gt;</span> ans<span class="token punctuation">;</span>
+        
+        <span class="token keyword">if</span><span class="token punctuation">(</span>nums<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span><span class="token number">4</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token function">sort</span><span class="token punctuation">(</span>nums<span class="token punctuation">.</span><span class="token function">begin</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>nums<span class="token punctuation">.</span><span class="token function">end</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//find consistent duplications</span>
+        
+        
+        
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>nums<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">3</span><span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span> target <span class="token operator">&amp;&amp;</span> nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&gt;</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">break</span><span class="token punctuation">;</span>
+            
+            <span class="token keyword">if</span><span class="token punctuation">(</span>i<span class="token operator">&gt;</span><span class="token number">0</span> <span class="token operator">&amp;&amp;</span> nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">==</span>nums<span class="token punctuation">[</span>i<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token punctuation">)</span> <span class="token keyword">continue</span><span class="token punctuation">;</span>
+            
+            <span class="token keyword">int</span> fixed <span class="token operator">=</span> target <span class="token operator">-</span> nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+            
+            <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j<span class="token operator">=</span>i<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">;</span>j<span class="token operator">&lt;</span>nums<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">2</span><span class="token punctuation">;</span>j<span class="token operator">++</span><span class="token punctuation">)</span>
+            <span class="token punctuation">{</span>   <span class="token comment">//no duplications</span>
+                <span class="token keyword">if</span><span class="token punctuation">(</span>j <span class="token operator">&gt;</span> i<span class="token operator">+</span><span class="token number">1</span> <span class="token operator">&amp;&amp;</span>  nums<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">==</span> nums<span class="token punctuation">[</span>j<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token keyword">continue</span><span class="token punctuation">;</span>  
+                <span class="token keyword">int</span> k<span class="token operator">=</span>j<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">,</span>l<span class="token operator">=</span>nums<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+                <span class="token keyword">while</span><span class="token punctuation">(</span>k<span class="token operator">&lt;</span>l<span class="token punctuation">)</span>
+                <span class="token punctuation">{</span>
+                    <span class="token keyword">int</span> tmp <span class="token operator">=</span> nums<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token operator">+</span>nums<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token operator">+</span>nums<span class="token punctuation">[</span>l<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                    <span class="token keyword">if</span><span class="token punctuation">(</span>tmp <span class="token operator">==</span> fixed<span class="token punctuation">)</span>
+                    <span class="token punctuation">{</span>
+                        ans<span class="token punctuation">.</span><span class="token function">push_back</span><span class="token punctuation">(</span><span class="token punctuation">{</span>nums<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>nums<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">,</span>nums<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token punctuation">,</span>nums<span class="token punctuation">[</span>l<span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                        
+                        <span class="token keyword">while</span><span class="token punctuation">(</span>k<span class="token operator">&lt;</span>l <span class="token operator">&amp;&amp;</span> nums<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token operator">==</span>nums<span class="token punctuation">[</span>k<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">++</span>k<span class="token punctuation">;</span>
+                        <span class="token keyword">while</span><span class="token punctuation">(</span>k<span class="token operator">&lt;</span>l <span class="token operator">&amp;&amp;</span> nums<span class="token punctuation">[</span>l<span class="token punctuation">]</span><span class="token operator">==</span>nums<span class="token punctuation">[</span>l<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">--</span>l<span class="token punctuation">;</span>
+                        <span class="token operator">--</span>l<span class="token punctuation">;</span>
+                        <span class="token operator">++</span>k<span class="token punctuation">;</span>
+                        
+                    <span class="token punctuation">}</span><span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>tmp <span class="token operator">&gt;</span> fixed <span class="token punctuation">)</span> <span class="token operator">--</span>l<span class="token punctuation">;</span>
+                    <span class="token keyword">else</span> <span class="token operator">++</span>k<span class="token punctuation">;</span>
+                    
+                    
+                    
+                    
+                    
+                <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+            
+        <span class="token punctuation">}</span>
+        
+        
+        <span class="token keyword">return</span> ans<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p>4sum  和3sum原理一致</p>
+<p>都是（n-2）层循环+双指针</p>
+<p>注意每层循环都要比较是否fixed的数字有重复，有重复就continue<br>
+eg：<mark>“if(j &gt; i+1 &amp;&amp;  nums[j] == nums[j-1])continue;  ”</mark><br>
+int j=i-1;<br>
+j&gt;i+1 是因为第1个j没有 j-1，第一个数字没有前一位数。</p>
+

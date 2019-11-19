@@ -1,0 +1,439 @@
+<div id="article_content" class="article_content clearfix csdn-tracking-statistics">
+            
+                              
+          <div class="htmledit_views" id="content_views">
+</div></div><p>
+<strong>函数作用：</strong></p>
+<p>
+系统提供select函数来实现多路复用输入/输出模型。select系统调用是用来让我们的程序监视多个文件句柄的状态变化的。程序会停在select这里等待，直到被监视的文件句柄有一个或多个发生了状态改变。关于文件句柄，其实就是一个整数，我们最熟悉的句柄是0、1、2三个，0是标准输入，1是标准输出，2是标准错误输出。0、1、2是整数表示的，对应的FILE *结构的表示就是stdin、stdout、stderr。</p>
+<p>
+函数原型：</p>
+<p>
+</p>
+<div class="dp-highlighter bg_cpp">
+<ol class="dp-cpp" start="1">
+<li class="alt">
+<span><span class="datatypes">int</span><span>&nbsp;select(</span><span class="datatypes">int</span><span>&nbsp;maxfd,fd_set&nbsp;*rdset,fd_set&nbsp;*wrset,&nbsp;\&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd_set&nbsp;*exset,<span class="keyword">struct</span><span>&nbsp;timeval&nbsp;*timeout);&nbsp;&nbsp;</span></span></li></ol>
+</div>
+<p>
+<strong>参数说明：</strong></p>
+<p>
+</p>
+<span>参数maxfd是需要监视的最大的文件描述符值+1；rdset,wrset,exset分别对应于需要检测的可读文件描述符的集合，可写文件描述符的集 合及异常文件描述符的集合。struct timeval结构用于描述一段时间长度，如果在这个时间内，需要监视的描述符没有事件发生则函数返回，返回值为0。</span><span></span><span></span>
+<p>
+</p>
+<p>
+<span></span>下面的宏提供了处理这三种描述词组的方式:<br>
+<span></span>FD_CLR(inr fd,fd_set* set)；用来清除描述词组set中相关fd 的位<br>
+<span></span>FD_ISSET(int fd,fd_set *set)；用来测试描述词组set中相关fd 的位是否为真<br>
+<span></span>FD_SET（int fd,fd_set*set）；用来设置描述词组set中相关fd的位<br>
+<span></span>FD_ZERO（fd_set *set）；用来清除描述词组set的全部位</p>
+<p>
+参数timeout为结构timeval，用来设置select()的等待时间，其结构定义如下：</p>
+<p>
+</p>
+<div class="dp-highlighter bg_cpp">
+<ol class="dp-cpp" start="1">
+<li class="alt">
+<span><span class="keyword">struct</span><span>&nbsp;timeval&nbsp;&nbsp;</span></span></li><li>
+<span>{&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">time_t</span><span>&nbsp;tv_sec;</span><span class="comment">//second</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">time_t</span><span>&nbsp;tv_usec;</span><span class="comment">//minisecond</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>};&nbsp;&nbsp;</span></li></ol>
+</div>
+<p>
+如果参数timeout设为：</p>
+<p>
+NULL，则表示select（）没有timeout，select将一直被阻塞，直到某个文件描述符上发生了事件。</p>
+<p>
+0：仅检测描述符集合的状态，然后立即返回，并不等待外部事件的发生。</p>
+<p>
+特定的时间值：如果在指定的时间段里没有事件发生，select将超时返回。</p>
+<p>
+<strong>函数返回值：</strong></p>
+<p>
+执行成功则返回文件描述词状态已改变的个数，如果返回0代表在描述词状态改变前已超过timeout时间，没有返回；当有错误发生时则返回-1，错误原因存于errno，此时参数readfds，writefds，exceptfds和timeout的值变成不可预测。错误值可能为：<br>
+EBADF 文件描述词为无效的或该文件已关闭<br>
+EINTR 此调用被信号所中断<br>
+EINVAL 参数n 为负值。<br>
+ENOMEM 核心内存不足</p>
+<p>
+常见的程序片段如下：</p>
+<p>
+fs_set readset；<br>
+FD_ZERO(&amp;readset);<br>
+FD_SET(fd,&amp;readset);<br>
+select(fd+1,&amp;readset,NULL,NULL,NULL);<br>
+if(FD_ISSET(fd,readset){……}</p>
+<p>
+<strong>理解select模型：</strong></p>
+<p>
+<span></span>理解select模型的关键在于理解fd_set,为说明方便，取fd_set长度为1字节，fd_set中的每一bit可以对应一个文件描述符fd。则1字节长的fd_set最大可以对应8个fd。</p>
+<p>
+（1）执行fd_set set; FD_ZERO(&amp;set);则set用位表示是0000,0000。</p>
+<p>
+（2）若fd＝5,执行FD_SET(fd,&amp;set);后set变为0001,0000(第5位置为1)</p>
+<p>
+（3）若再加入fd＝2，fd=1,则set变为0001,0011</p>
+<p>
+（4）执行select(6,&amp;set,0,0,0)阻塞等待</p>
+<p>
+（5）若fd=1,fd=2上都发生可读事件，则select返回，此时set变为0000,0011。注意：没有事件发生的fd=5被清空。</p>
+<p>
+　基于上面的讨论，可以轻松得出select模型的特点：</p>
+<p>
+　　（1)可监控的文件描述符个数取决与sizeof(fd_set)的值。我这边服务 器上sizeof(fd_set)＝512，每bit表示一个文件描述符，则我服务器上支持的最大文件描述符是512*8=4096。据说可调，另有说虽 然可调，但调整上限受于编译内核时的变量值。本人对调整fd_set的大小不太感兴趣，参考<a target="_blank" href="http://home.eeworld.com.cn/my/link.php?url=http://www.cppblog.com%2F" rel="nofollow">http://www.cppblog.com</a>&nbsp;/CppExplore/archive/2008/03/21/45061.html中的模型2（1）可以有效突破select可监控的文件描述符上
+ 限。</p>
+<p>
+　　（2）将fd加入select监控集的同时，还要再使用一个数据结构array保存放到select监控集中的fd，一是用于再select 返回后，array作为源数据和fd_set进行FD_ISSET判断。二是select返回后会把以前加入的但并无事件发生的fd清空，则每次开始 select前都要重新从array取得fd逐一加入（FD_ZERO最先），扫描array的同时取得fd最大值maxfd，用于select的第一个 参数。</p>
+<p>
+　　（3）可见select模型必须在select前循环array（加fd，取maxfd），select返回后循环array（FD_ISSET判断是否有时间发生）。</p>
+<p>
+下面给一个伪码说明基本select模型的服务器模型：</p>
+<p>
+</p>
+<div class="dp-highlighter bg_cpp">
+<ol class="dp-cpp" start="1">
+<li class="alt">
+<span>array[slect_len];&nbsp;&nbsp;</span></li><li>
+<span>　nSock=0;&nbsp;&nbsp;</span></li><li class="alt">
+<span>　array[nSock++]=listen_fd;(之前listen&nbsp;port已绑定并listen)&nbsp;&nbsp;</span></li><li>
+<span>　maxfd=listen_fd;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>　<span class="keyword">while</span><span>(1){&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>　　FD_ZERO(&amp;set);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>　　foreach&nbsp;(fd&nbsp;in&nbsp;array)&nbsp;&nbsp;</span></li><li class="alt">
+<span>　　{&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　fd大于maxfd，则maxfd=fd&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　FD_SET(fd,&amp;set)&nbsp;&nbsp;</span></li><li>
+<span>　　}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>　　res=select(maxfd+1,&amp;set,0,0,0)；&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>　　<span class="keyword">if</span><span>(FD_ISSET(listen_fd,&amp;set))&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>　　{&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　newfd=accept(listen_fd);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　array[nsock++]=newfd;&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　<span class="keyword">if</span><span>(--res&lt;=0)&nbsp;</span><span class="keyword">continue</span><span>;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>　　}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>　　foreach&nbsp;下标1开始&nbsp;(fd&nbsp;in&nbsp;array)&nbsp;&nbsp;</span></li><li>
+<span>　　{&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　<span class="keyword">if</span><span>(FD_ISSET(fd,&amp;tyle=</span><span class="string">"COLOR:&nbsp;#ff0000"</span><span>&gt;set))&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　执行读等相关操作&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　如果错误或者关闭，则要删除该fd，将array中相应位置和最后一个元素互换就好，nsock减一&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;　　<span class="keyword">if</span><span>(--res&lt;=0)&nbsp;</span><span class="keyword">continue</span><span>;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>　　}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>　}&nbsp;&nbsp;</span></li></ol>
+</div>
+<span>检测键盘有无输入，完整的程序如下：</span><span></span><span></span>
+<p>
+</p>
+<div class="dp-highlighter bg_cpp">
+<ol class="dp-cpp" start="1">
+<li class="alt">
+<span><span class="preprocessor">#include&lt;sys/time.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span><span class="preprocessor">#include&lt;sys/types.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span><span class="preprocessor">#include&lt;unistd.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span><span class="preprocessor">#include&lt;string.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span><span class="preprocessor">#include&lt;stdlib.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span><span class="preprocessor">#include&lt;stdio.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span><span class="datatypes">int</span><span>&nbsp;main()&nbsp;&nbsp;</span></span></li><li>
+<span>{&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">char</span><span>&nbsp;buf[10]=</span><span class="string">""</span><span>;&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd_set&nbsp;rdfds;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">struct</span><span>&nbsp;timeval&nbsp;tv;&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">int</span><span>&nbsp;ret;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FD_ZERO(&amp;rdfds);&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FD_SET(0,&amp;rdfds);&nbsp;&nbsp;&nbsp;<span class="comment">//文件描述符0表示stdin键盘输入</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tv.tv_sec&nbsp;=&nbsp;3;&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tv.tv_usec&nbsp;=&nbsp;500;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret&nbsp;=&nbsp;select(1,&amp;rdfds,NULL,NULL,&amp;tv);&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>(ret&lt;0)&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"\n&nbsp;selcet"</span><span>);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span><span>&nbsp;</span><span class="keyword">if</span><span>(ret&nbsp;==&nbsp;0)&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"\n&nbsp;timeout"</span><span>);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"\n&nbsp;ret&nbsp;=&nbsp;%d"</span><span>,ret);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>(FD_ISSET(1,&amp;rdfds))&nbsp;&nbsp;</span><span class="comment">//如果有输入，从stdin中获取输入字符</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"\n&nbsp;reading"</span><span>);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fread(buf,9,1,stdin);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write(1,buf,strlen(buf));&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"\n&nbsp;%d&nbsp;\n"</span><span>,strlen(buf));&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span><span>&nbsp;0;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>}&nbsp;&nbsp;</span></li><li>
+<span><span class="comment">//执行结果ret&nbsp;=&nbsp;1.</span><span>&nbsp;&nbsp;</span></span></li></ol>
+</div>
+<p>
+利用Select模型，设计的web服务器：</p>
+<p>
+</p>
+<div class="dp-highlighter bg_cpp">
+<ol class="dp-cpp" start="1">
+<li class="alt">
+<span><span class="preprocessor">#include&nbsp;&lt;stdio.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span><span class="preprocessor">#include&nbsp;&lt;stdlib.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span><span class="preprocessor">#include&nbsp;&lt;unistd.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span><span class="preprocessor">#include&nbsp;&lt;errno.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span><span class="preprocessor">#include&nbsp;&lt;string.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span><span class="preprocessor">#include&nbsp;&lt;sys/types.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span><span class="preprocessor">#include&nbsp;&lt;sys/socket.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span><span class="preprocessor">#include&nbsp;&lt;netinet/in.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span><span class="preprocessor">#include&nbsp;&lt;arpa/inet.h&gt;</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span><span class="preprocessor">#define&nbsp;MYPORT&nbsp;88960&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;the&nbsp;port&nbsp;users&nbsp;will&nbsp;be&nbsp;connecting&nbsp;to</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span><span class="preprocessor">#define&nbsp;BACKLOG&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;how&nbsp;many&nbsp;pending&nbsp;connections&nbsp;queue&nbsp;will&nbsp;hold</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span><span class="preprocessor">#define&nbsp;BUF_SIZE&nbsp;200</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span><span class="datatypes">int</span><span>&nbsp;fd_A[BACKLOG];&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="comment">//&nbsp;accepted&nbsp;connection&nbsp;fd</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span><span class="datatypes">int</span><span>&nbsp;conn_amount;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="comment">//&nbsp;current&nbsp;connection&nbsp;amount</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span><span class="keyword">void</span><span>&nbsp;showclient()&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>{&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">int</span><span>&nbsp;i;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"client&nbsp;amount:&nbsp;%d\n"</span><span>,&nbsp;conn_amount);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;BACKLOG;&nbsp;i++)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"[%d]:%d&nbsp;&nbsp;"</span><span>,&nbsp;i,&nbsp;fd_A[i]);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"\n\n"</span><span>);&nbsp;&nbsp;</span></span></li><li>
+<span>}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span><span class="datatypes">int</span><span>&nbsp;main(</span><span class="keyword">void</span><span>)&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>{&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">int</span><span>&nbsp;sock_fd,&nbsp;new_fd;&nbsp;&nbsp;</span><span class="comment">//&nbsp;listen&nbsp;on&nbsp;sock_fd,&nbsp;new&nbsp;connection&nbsp;on&nbsp;new_fd</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">struct</span><span>&nbsp;sockaddr_in&nbsp;server_addr;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="comment">//&nbsp;server&nbsp;address&nbsp;information</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">struct</span><span>&nbsp;sockaddr_in&nbsp;client_addr;&nbsp;</span><span class="comment">//&nbsp;connector's&nbsp;address&nbsp;information</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;socklen_t&nbsp;sin_size;&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">int</span><span>&nbsp;yes&nbsp;=&nbsp;1;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">char</span><span>&nbsp;buf[BUF_SIZE];&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">int</span><span>&nbsp;ret;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">int</span><span>&nbsp;i;&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;((sock_fd&nbsp;=&nbsp;socket(AF_INET,&nbsp;SOCK_STREAM,&nbsp;0))&nbsp;==&nbsp;-1)&nbsp;{&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<span class="string">"socket"</span><span>);&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit(1);&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(setsockopt(sock_fd,&nbsp;SOL_SOCKET,&nbsp;SO_REUSEADDR,&nbsp;&amp;yes,&nbsp;</span><span class="keyword">sizeof</span><span>(</span><span class="datatypes">int</span><span>))&nbsp;==&nbsp;-1)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<span class="string">"setsockopt"</span><span>);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit(1);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;server_addr.sin_family&nbsp;=&nbsp;AF_INET;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;host&nbsp;byte&nbsp;order</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;server_addr.sin_port&nbsp;=&nbsp;htons(MYPORT);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;short,&nbsp;network&nbsp;byte&nbsp;order</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;server_addr.sin_addr.s_addr&nbsp;=&nbsp;INADDR_ANY;&nbsp;<span class="comment">//&nbsp;automatically&nbsp;fill&nbsp;with&nbsp;my&nbsp;IP</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;memset(server_addr.sin_zero,&nbsp;<span class="string">'\0'</span><span>,&nbsp;</span><span class="keyword">sizeof</span><span>(server_addr.sin_zero));&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(bind(sock_fd,&nbsp;(</span><span class="keyword">struct</span><span>&nbsp;sockaddr&nbsp;*)&amp;server_addr,&nbsp;</span><span class="keyword">sizeof</span><span>(server_addr))&nbsp;==&nbsp;-1)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<span class="string">"bind"</span><span>);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit(1);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(listen(sock_fd,&nbsp;BACKLOG)&nbsp;==&nbsp;-1)&nbsp;{&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<span class="string">"listen"</span><span>);&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exit(1);&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"listen&nbsp;port&nbsp;%d\n"</span><span>,&nbsp;MYPORT);&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;fd_set&nbsp;fdsr;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">int</span><span>&nbsp;maxsock;&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">struct</span><span>&nbsp;timeval&nbsp;tv;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;conn_amount&nbsp;=&nbsp;0;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;sin_size&nbsp;=&nbsp;<span class="keyword">sizeof</span><span>(client_addr);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;maxsock&nbsp;=&nbsp;sock_fd;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">while</span><span>&nbsp;(1)&nbsp;{&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;initialize&nbsp;file&nbsp;descriptor&nbsp;set</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FD_ZERO(&amp;fdsr);&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FD_SET(sock_fd,&nbsp;&amp;fdsr);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;timeout&nbsp;setting</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tv.tv_sec&nbsp;=&nbsp;30;&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tv.tv_usec&nbsp;=&nbsp;0;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;add&nbsp;active&nbsp;connection&nbsp;to&nbsp;fd&nbsp;set</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;BACKLOG;&nbsp;i++)&nbsp;{&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(fd_A[i]&nbsp;!=&nbsp;0)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FD_SET(fd_A[i],&nbsp;&amp;fdsr);&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret&nbsp;=&nbsp;select(maxsock&nbsp;+&nbsp;1,&nbsp;&amp;fdsr,&nbsp;NULL,&nbsp;NULL,&nbsp;&amp;tv);&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(ret&nbsp;&lt;&nbsp;0)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<span class="string">"select"</span><span>);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">break</span><span>;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="keyword">else</span><span>&nbsp;</span><span class="keyword">if</span><span>&nbsp;(ret&nbsp;==&nbsp;0)&nbsp;{&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"timeout\n"</span><span>);&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">continue</span><span>;&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;check&nbsp;every&nbsp;fd&nbsp;in&nbsp;the&nbsp;set</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;conn_amount;&nbsp;i++)&nbsp;{&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(FD_ISSET(fd_A[i],&nbsp;&amp;fdsr))&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret&nbsp;=&nbsp;recv(fd_A[i],&nbsp;buf,&nbsp;<span class="keyword">sizeof</span><span>(buf),&nbsp;0);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="datatypes">char</span><span>&nbsp;str[]&nbsp;=&nbsp;</span><span class="string">"Good,very&nbsp;nice!\n"</span><span>;&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send(fd_A[i],str,<span class="keyword">sizeof</span><span>(str)&nbsp;+&nbsp;1,&nbsp;0);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(ret&nbsp;&lt;=&nbsp;0)&nbsp;{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="comment">//&nbsp;client&nbsp;close</span><span>&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"client[%d]&nbsp;close\n"</span><span>,&nbsp;i);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close(fd_A[i]);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FD_CLR(fd_A[i],&nbsp;&amp;fdsr);&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd_A[i]&nbsp;=&nbsp;0;&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;<span class="keyword">else</span><span>&nbsp;{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="comment">//&nbsp;receive&nbsp;data</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(ret&nbsp;&lt;&nbsp;BUF_SIZE)&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memset(&amp;buf[ret],&nbsp;<span class="string">'\0'</span><span>,&nbsp;1);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"client[%d]&nbsp;send:%s\n"</span><span>,&nbsp;i,&nbsp;buf);&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;check&nbsp;whether&nbsp;a&nbsp;new&nbsp;connection&nbsp;comes</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(FD_ISSET(sock_fd,&nbsp;&amp;fdsr))&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;new_fd&nbsp;=&nbsp;accept(sock_fd,&nbsp;(<span class="keyword">struct</span><span>&nbsp;sockaddr&nbsp;*)&amp;client_addr,&nbsp;&amp;sin_size);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(new_fd&nbsp;&lt;=&nbsp;0)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<span class="string">"accept"</span><span>);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">continue</span><span>;&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;add&nbsp;to&nbsp;fd&nbsp;queue</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(conn_amount&nbsp;&lt;&nbsp;BACKLOG)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd_A[conn_amount++]&nbsp;=&nbsp;new_fd;&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"new&nbsp;connection&nbsp;client[%d]&nbsp;%s:%d\n"</span><span>,&nbsp;conn_amount,&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inet_ntoa(client_addr.sin_addr),&nbsp;ntohs(client_addr.sin_port));&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(new_fd&nbsp;&gt;&nbsp;maxsock)&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maxsock&nbsp;=&nbsp;new_fd;&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span><span>&nbsp;{&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<span class="string">"max&nbsp;connections&nbsp;arrive,&nbsp;exit\n"</span><span>);&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send(new_fd,&nbsp;<span class="string">"bye"</span><span>,&nbsp;4,&nbsp;0);&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close(new_fd);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">break</span><span>;&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;showclient();&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">//&nbsp;close&nbsp;other&nbsp;connections</span><span>&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span><span>&nbsp;(i&nbsp;=&nbsp;0;&nbsp;i&nbsp;&lt;&nbsp;BACKLOG;&nbsp;i++)&nbsp;{&nbsp;&nbsp;</span></span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(fd_A[i]&nbsp;!=&nbsp;0)&nbsp;{&nbsp;&nbsp;</span></span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close(fd_A[i]);&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}&nbsp;&nbsp;</span></li><li class="alt">
+<span>&nbsp;&nbsp;</span></li><li>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;exit(0);&nbsp;&nbsp;</span></li><li class="alt">
+<span>}&nbsp;&nbsp;</span></li></ol>
+</div>
+<span><span>补充部分：</span></span><span></span><span></span>
+<p>
+</p>
+<h2><a></a>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1 基本原理</h2>
+<p>
+</p>
+<p>
+<img src="http://hi.csdn.net/attachment/201203/11/2429699_1331492431cuPx.gif" alt="Resize icon"></p>
+<p>
+<em>注：select 原理图，摘自&nbsp;<a target="_blank" href="http://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzab6%2Frzab6xnonblock.htm" rel="nofollow">IBM iSeries 信息中心</a></em>。</p>
+<h2><a></a>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1 数据结构与函数原型</h2>
+<h3><a></a>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.1 select</h3>
+<ul>
+<li>函数原型
+<blockquote>
+<pre><code class="hljs sql"></code><ol class="hljs-ln"><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">   int <span class="hljs-keyword">select</span>(</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">      <span class="hljs-built_in">int</span> nfds,</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">      fd_set *readset,</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">      fd_set *writeset,</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">      fd_set* exceptset,</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">      <span class="hljs-keyword">struct</span> timeval *<span class="hljs-keyword">timeout</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">   );</div></div></li></ol><div class="hljs-button {2}"></div></pre>
+</blockquote>
+</li><li>头文件
+<blockquote>
+<ul>
+<li><code>select</code>位于：
+<blockquote>
+<pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/select.h&gt;</span></span>
+</code><div class="hljs-button {2}"></div></pre>
+</blockquote>
+</li><li><code>struct timeval</code>位于：
+<blockquote>
+<pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/time.h&gt;</span></span>
+</code><div class="hljs-button {2}"></div></pre>
+</blockquote>
+</li></ul>
+</blockquote>
+</li><li>返回值
+<blockquote>
+<p>
+返回对应位仍然为1的fd的总数。</p>
+</blockquote>
+</li><li>参数
+<blockquote>
+<ul>
+<li>nfds：第一个参数是：最大的文件描述符值+1；</li><li>readset：可读描述符集合；</li><li>writeset：可写描述符集合；</li><li>exceptset：异常描述符；</li><li>timeout：select 的监听时长，如果这短时间内所监听的 socket 没有事件发生。</li></ul>
+</blockquote>
+</li></ul>
+<h3><a></a>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.2 fd_set</h3>
+<h4>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.2.1 清空描述符集合</h4>
+<pre><code class="hljs">FD_ZERO(fd_set *)
+</code><div class="hljs-button {2}"></div></pre>
+<h4>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.2.2 向描述符集合添加指定描述符</h4>
+<pre><code class="hljs java">FD_SET(<span class="hljs-keyword">int</span>, fd_set *)
+</code><div class="hljs-button {2}"></div></pre>
+<h4>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.2.3 从描述符集合删除指定描述符</h4>
+<pre><code class="hljs java">FD_CLR(<span class="hljs-keyword">int</span>, fd_set *)
+</code><div class="hljs-button {2}"></div></pre>
+<h4>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.2.4 检测指定描述符是否在描述符集合中</h4>
+<pre><code class="hljs java">FD_ISSET(<span class="hljs-keyword">int</span>, fd_set *)
+</code><div class="hljs-button {2}"></div></pre>
+<h4>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.2.5 描述符最大数量</h4>
+<pre><code class="hljs cs"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> FD_SETSIZE 1024</span>
+</code><div class="hljs-button {2}"></div></pre>
+<h3><a></a>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.3 描述符集合</h3>
+<p>
+可读描述符集合中可读的描述符，为1，其他为0；可写也类似。异常描述符集合中有异常等待处理的描述符的值为1，其他为0。</p>
+<h3><a></a>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>1.4 ioctl</h3>
+<ul>
+<li>
+<p>
+函数原型：</p>
+<pre><code class="hljs java">  <span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">ioctl</span><span class="hljs-params">(<span class="hljs-keyword">int</span> handle, <span class="hljs-keyword">int</span> cmd,[<span class="hljs-keyword">int</span> *argdx, <span class="hljs-keyword">int</span> argcx])</span></span>;
+</code><div class="hljs-button {2}"></div></pre>
+</li><li>
+<p>
+头文件：</p>
+<pre><code class="hljs cpp">  <span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/ioctl.h&gt;</span></span>
+</code><div class="hljs-button {2}"></div></pre>
+</li><li>
+<p>
+返回值：</p>
+<blockquote>
+<ul>
+<li>0 - 成功</li><li>1 - 失败</li></ul>
+</blockquote>
+</li></ul>
+<h2><a></a>
+<a target="_blank"></a><a target="_blank"></a><a target="_blank"></a>2 示例</h2>
+<p>
+程序各部分的解释在注释中。</p>
+<pre><code class="hljs cpp"></code><ol class="hljs-ln hundred"><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/socket.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;string.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/time.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;netinet/in.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;sys/ioctl.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdlib.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;errno.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;stdio.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;unistd.h&gt;</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> TRUE  1</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> FALSE 0</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">int</span> argc, <span class="hljs-keyword">char</span> *argv[])</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">{</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">int</span> i, len, rc, on = TRUE;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">int</span> listen_sd, new_sd = <span class="hljs-number">0</span>, max_sd;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">int</span> desc_ready;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">char</span> buffer[<span class="hljs-number">80</span>];</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">int</span> close_conn, end_server = FALSE;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sockaddr_in</span> <span class="hljs-title">server_addr</span>;</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">timeval</span> <span class="hljs-title">timeout</span>;</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">fd_set</span> <span class="hljs-title">master_set</span>, <span class="hljs-title">working_set</span>;</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-comment">// Listen</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    listen_sd = socket(AF_INET, SOCK_STREAM, <span class="hljs-number">0</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">if</span> (listen_sd &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        perror(<span class="hljs-string">"socket() failed"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-comment">// Set socket options</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    rc = setsockopt(listen_sd, SOL_SOCKET, SO_REUSEADDR, (<span class="hljs-keyword">char</span> *) &amp;on, <span class="hljs-keyword">sizeof</span>(on));</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">if</span> (rc &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        perror(<span class="hljs-string">"setsockopt() failed"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        close(listen_sd);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-comment">// Set IO control</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    rc = ioctl(listen_sd, FIONBIO, (<span class="hljs-keyword">char</span> *) &amp;on);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">if</span> (rc &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        perror(<span class="hljs-string">"ioctl() failed"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        close(listen_sd);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-comment">// Bind</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-built_in">memset</span>(&amp;server_addr, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(server_addr));</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    server_addr.sin_family = AF_INET;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    server_addr.sin_port = htons(atoi(argv[<span class="hljs-number">1</span>]));</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    rc = bind(listen_sd, (struct sockaddr *) &amp;server_addr, <span class="hljs-keyword">sizeof</span>(server_addr));</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">if</span> (rc &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        perror(<span class="hljs-string">"bind() failed\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        close(listen_sd);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-comment">// Listen</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    rc = listen(listen_sd, <span class="hljs-number">32</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">if</span> (rc &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        perror(<span class="hljs-string">"listen() failed\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        close(listen_sd);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-comment">// Intialize sd set</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    FD_ZERO(&amp;master_set);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    max_sd = listen_sd;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    FD_SET(listen_sd, &amp;master_set);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    timeout.tv_sec = <span class="hljs-number">3</span> * <span class="hljs-number">60</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    timeout.tv_usec = <span class="hljs-number">0</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-comment">// Start</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">do</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-comment">// Copy master_set into working_set</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-built_in">memcpy</span>(&amp;working_set, &amp;master_set, <span class="hljs-keyword">sizeof</span>(master_set));</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-built_in">printf</span>(<span class="hljs-string">"Waiting on select()...\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        rc = select(max_sd + <span class="hljs-number">1</span>, &amp;working_set, <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>, &amp;timeout);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-keyword">if</span> (rc &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            perror(<span class="hljs-string">"  select() failed\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            <span class="hljs-keyword">break</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-keyword">if</span> (rc == <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            <span class="hljs-built_in">printf</span>(<span class="hljs-string">"  select() timed out. End program.\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            <span class="hljs-keyword">break</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        desc_ready = rc; <span class="hljs-comment">// number of sds ready in working_set</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-comment">// Check each sd in working_set</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt;= max_sd &amp;&amp; desc_ready &gt; <span class="hljs-number">0</span>; ++i)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            <span class="hljs-comment">// Check to see if this sd is ready</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            <span class="hljs-keyword">if</span> (FD_ISSET(i, &amp;working_set))</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                --desc_ready;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                <span class="hljs-comment">// Check to see if this is the listening sd</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                <span class="hljs-keyword">if</span> (i == listen_sd)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    <span class="hljs-built_in">printf</span>(<span class="hljs-string">"  Listeing socket is readable\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    <span class="hljs-keyword">do</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-comment">// Accept</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        new_sd = accept(listen_sd, <span class="hljs-literal">NULL</span>, <span class="hljs-literal">NULL</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-comment">// Nothing to be accepted</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-keyword">if</span> (new_sd &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-comment">// All have been accepted</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-keyword">if</span> (errno != EWOULDBLOCK)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                                perror(<span class="hljs-string">"  accept() failed\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                                end_server = TRUE;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-keyword">break</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-comment">// Insert new_sd into master_set</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-built_in">printf</span>(<span class="hljs-string">"  New incoming connection - %d\n"</span>, new_sd);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        FD_SET(new_sd, &amp;master_set);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-keyword">if</span> (new_sd &gt; max_sd)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            max_sd = new_sd;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    <span class="hljs-keyword">while</span> (new_sd != <span class="hljs-number">-1</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                <span class="hljs-comment">// This is not the listening sd</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                <span class="hljs-keyword">else</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    close_conn = FALSE;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    <span class="hljs-built_in">printf</span>(<span class="hljs-string">"  Descriptor %d is avaliable\n"</span>, i);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    <span class="hljs-keyword">do</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        rc = recv(i, buffer, <span class="hljs-keyword">sizeof</span>(buffer), <span class="hljs-number">0</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-comment">// Receive data on sd "i", until failure occurs</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-keyword">if</span> (rc &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-comment">// Normal failure</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-keyword">if</span> (errno != EWOULDBLOCK)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                                perror(<span class="hljs-string">"  recv() failed\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                                close_conn = TRUE;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-keyword">break</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-comment">// The connection has been closed by the client</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-keyword">if</span> (rc == <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-built_in">printf</span>(<span class="hljs-string">"  Connection closed\n"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            close_conn = TRUE;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-keyword">break</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-comment"><span class="hljs-comment">/* Receiving data succeeded and echo it back</span></span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"><span class="hljs-comment">                           the to client */</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        len = rc;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-built_in">printf</span>(<span class="hljs-string">"  %d bytes received\n"</span>, len);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        rc = send(i, buffer, len, <span class="hljs-number">0</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-keyword">if</span> (rc &lt; <span class="hljs-number">0</span>)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            perror(<span class="hljs-string">"  send() failed"</span>);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            close_conn = TRUE;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-keyword">break</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    <span class="hljs-keyword">while</span> (TRUE);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    <span class="hljs-comment">// If unknown failure occured</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    <span class="hljs-keyword">if</span> (close_conn)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-comment">// Close the sd and remove it from master_set</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        close(i);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        FD_CLR(i, &amp;master_set);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-comment">// If this is the max sd</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        <span class="hljs-keyword">if</span> (i == max_sd)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-comment">// Find the max sd in master_set now</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            <span class="hljs-keyword">while</span> (FD_ISSET(max_sd, &amp;master_set) == FALSE)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                                --max_sd;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                            }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                        } <span class="hljs-comment">// End of if (i == max_sd)</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                    } <span class="hljs-comment">// End of if (close_conn)</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">                }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">while</span> (end_server == FALSE);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-comment">/* Close each sd in master_set */</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; max_sd; ++i)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        <span class="hljs-keyword">if</span> (FD_ISSET(i, &amp;master_set))</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        {</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">            close(i);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">        }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    }</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">}</div></div></li></ol><div class="hljs-button {2}"></div></pre>
+          
+                  
+

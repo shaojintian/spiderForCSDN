@@ -1,0 +1,108 @@
+<p>深度学习是监督学习的一个分支。<br>
+简单来说就是当线性模型无法解决问题时，引入的一种方法。<br>
+它综合多种线行模型来从x空间——&gt;学习到h空间，h空间为可用线行模型解决的空间</p>
+<p>深度前馈网络（deep feedforward network)又叫多层感知机，是深度学习最典型的模型。</p>
+<p>引入一个例子：<br>
+XOR异或问题</p>
+<p><img src="https://img-blog.csdnimg.cn/20181108013846134.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>当 x1不变时，x2递增，输出结果的趋势相反，即出现了递增，也出现了递减。这不是线性变化的，所以无法用线性模型来分类。<br>
+<img src="https://img-blog.csdnimg.cn/20181108020035803.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+上图两个输出空间，黑；绿<br>
+引出神经网络核心思想，多线性模型一起工作。<br>
+<img src="https://img-blog.csdnimg.cn/20181108021624255.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2><a id="python_18"></a>接下来使用python制作自己的神经网络：</h2>
+<p>构架：<br>
+1：初始化函数：设定输入层节点，隐藏层节点和输出层节点（上图所示）<br>
+2：训练：学习给定训练集样本后，优化权重<br>
+3：查询：给定输入，从输出节点得到输出结果</p>
+<pre><code class="prism language-py"><span class="token keyword">import</span> numpy
+<span class="token comment"># scipy.special for the sigmoid function expit()</span>
+<span class="token keyword">import</span> scipy<span class="token punctuation">.</span>special
+
+<span class="token comment"># neural network class definition</span>
+<span class="token keyword">class</span> <span class="token class-name">neuralNetwork</span><span class="token punctuation">:</span>
+    
+    
+    <span class="token comment"># initialise the neural network</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> inputnodes<span class="token punctuation">,</span> hiddennodes<span class="token punctuation">,</span> outputnodes<span class="token punctuation">,</span> learningrate<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># set number of nodes in each input, hidden, output layer</span>
+        self<span class="token punctuation">.</span>inodes <span class="token operator">=</span> inputnodes
+        self<span class="token punctuation">.</span>hnodes <span class="token operator">=</span> hiddennodes
+        self<span class="token punctuation">.</span>onodes <span class="token operator">=</span> outputnodes
+        
+        <span class="token comment"># link weight matrices, wih and who</span>
+        <span class="token comment"># weights inside the arrays are w_i_j, where link is from node i to node j in the next layer</span>
+        <span class="token comment"># w11 w21</span>
+        <span class="token comment"># w12 w22 etc </span>
+        self<span class="token punctuation">.</span>wih <span class="token operator">=</span> numpy<span class="token punctuation">.</span>random<span class="token punctuation">.</span>normal<span class="token punctuation">(</span><span class="token number">0.0</span><span class="token punctuation">,</span> <span class="token builtin">pow</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>inodes<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">0.5</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>hnodes<span class="token punctuation">,</span> self<span class="token punctuation">.</span>inodes<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>who <span class="token operator">=</span> numpy<span class="token punctuation">.</span>random<span class="token punctuation">.</span>normal<span class="token punctuation">(</span><span class="token number">0.0</span><span class="token punctuation">,</span> <span class="token builtin">pow</span><span class="token punctuation">(</span>self<span class="token punctuation">.</span>hnodes<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">0.5</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>self<span class="token punctuation">.</span>onodes<span class="token punctuation">,</span> self<span class="token punctuation">.</span>hnodes<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+        <span class="token comment"># learning rate</span>
+        self<span class="token punctuation">.</span>lr <span class="token operator">=</span> learningrate
+        
+        <span class="token comment"># activation function is the sigmoid function</span>
+        self<span class="token punctuation">.</span>activation_function <span class="token operator">=</span> <span class="token keyword">lambda</span> x<span class="token punctuation">:</span> scipy<span class="token punctuation">.</span>special<span class="token punctuation">.</span>expit<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+        
+        <span class="token keyword">pass</span>
+
+    
+    <span class="token comment"># train the neural network</span>
+    <span class="token keyword">def</span> <span class="token function">train</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> inputs_list<span class="token punctuation">,</span> targets_list<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># convert inputs list to 2d array</span>
+        inputs <span class="token operator">=</span> numpy<span class="token punctuation">.</span>array<span class="token punctuation">(</span>inputs_list<span class="token punctuation">,</span> ndmin<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span>T
+        targets <span class="token operator">=</span> numpy<span class="token punctuation">.</span>array<span class="token punctuation">(</span>targets_list<span class="token punctuation">,</span> ndmin<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span>T
+        
+        <span class="token comment"># calculate signals into hidden layer</span>
+        hidden_inputs <span class="token operator">=</span> numpy<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>self<span class="token punctuation">.</span>wih<span class="token punctuation">,</span> inputs<span class="token punctuation">)</span>
+        <span class="token comment"># calculate the signals emerging from hidden layer</span>
+        hidden_outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>activation_function<span class="token punctuation">(</span>hidden_inputs<span class="token punctuation">)</span>
+        
+        <span class="token comment"># calculate signals into final output layer</span>
+        final_inputs <span class="token operator">=</span> numpy<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>self<span class="token punctuation">.</span>who<span class="token punctuation">,</span> hidden_outputs<span class="token punctuation">)</span>
+        <span class="token comment"># calculate the signals emerging from final output layer</span>
+        final_outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>activation_function<span class="token punctuation">(</span>final_inputs<span class="token punctuation">)</span>
+        
+        <span class="token comment"># output layer error is the (target - actual)</span>
+        output_errors <span class="token operator">=</span> targets <span class="token operator">-</span> final_outputs
+        <span class="token comment"># hidden layer error is the output_errors, split by weights, recombined at hidden nodes</span>
+        hidden_errors <span class="token operator">=</span> numpy<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>self<span class="token punctuation">.</span>who<span class="token punctuation">.</span>T<span class="token punctuation">,</span> output_errors<span class="token punctuation">)</span> 
+        
+        <span class="token comment"># update the weights for the links between the hidden and output layers</span>
+        self<span class="token punctuation">.</span>who <span class="token operator">+=</span> self<span class="token punctuation">.</span>lr <span class="token operator">*</span> numpy<span class="token punctuation">.</span>dot<span class="token punctuation">(</span><span class="token punctuation">(</span>output_errors <span class="token operator">*</span> final_outputs <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token number">1.0</span> <span class="token operator">-</span> final_outputs<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> numpy<span class="token punctuation">.</span>transpose<span class="token punctuation">(</span>hidden_outputs<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token comment"># update the weights for the links between the input and hidden layers</span>
+        self<span class="token punctuation">.</span>wih <span class="token operator">+=</span> self<span class="token punctuation">.</span>lr <span class="token operator">*</span> numpy<span class="token punctuation">.</span>dot<span class="token punctuation">(</span><span class="token punctuation">(</span>hidden_errors <span class="token operator">*</span> hidden_outputs <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token number">1.0</span> <span class="token operator">-</span> hidden_outputs<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> numpy<span class="token punctuation">.</span>transpose<span class="token punctuation">(</span>inputs<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        
+        <span class="token keyword">pass</span>
+
+    
+    <span class="token comment"># query the neural network</span>
+    <span class="token keyword">def</span> <span class="token function">query</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> inputs_list<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment"># convert inputs list to 2d array</span>
+        inputs <span class="token operator">=</span> numpy<span class="token punctuation">.</span>array<span class="token punctuation">(</span>inputs_list<span class="token punctuation">,</span> ndmin<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">.</span>T
+        
+        <span class="token comment"># calculate signals into hidden layer</span>
+        hidden_inputs <span class="token operator">=</span> numpy<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>self<span class="token punctuation">.</span>wih<span class="token punctuation">,</span> inputs<span class="token punctuation">)</span>
+        <span class="token comment"># calculate the signals emerging from hidden layer</span>
+        hidden_outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>activation_function<span class="token punctuation">(</span>hidden_inputs<span class="token punctuation">)</span>
+        
+        <span class="token comment"># calculate signals into final output layer</span>
+        final_inputs <span class="token operator">=</span> numpy<span class="token punctuation">.</span>dot<span class="token punctuation">(</span>self<span class="token punctuation">.</span>who<span class="token punctuation">,</span> hidden_outputs<span class="token punctuation">)</span>
+        <span class="token comment"># calculate the signals emerging from final output layer</span>
+        final_outputs <span class="token operator">=</span> self<span class="token punctuation">.</span>activation_function<span class="token punctuation">(</span>final_inputs<span class="token punctuation">)</span>
+        
+        <span class="token keyword">return</span> final_outputs
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span><span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    <span class="token comment"># number of input, hidden and output nodes</span>
+    input_nodes <span class="token operator">=</span><span class="token number">2</span>  
+    hidden_nodes <span class="token operator">=</span> <span class="token number">5</span>
+    output_nodes <span class="token operator">=</span> <span class="token number">1</span>
+
+    <span class="token comment"># learning rate is 0.3</span>
+    learning_rate <span class="token operator">=</span>  <span class="token number">00.3</span>
+    n <span class="token operator">=</span> neuralNetwork<span class="token punctuation">(</span>input_nodes<span class="token punctuation">,</span>hidden_nodes<span class="token punctuation">,</span>output_nodes<span class="token punctuation">,</span> learning_rate<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>n<span class="token punctuation">.</span>query<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+

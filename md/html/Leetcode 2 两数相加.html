@@ -1,0 +1,54 @@
+<p><img src="https://img-blog.csdnimg.cn/20190404003529978.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-cpp"><span class="token comment">/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */</span>
+<span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    ListNode<span class="token operator">*</span> <span class="token function">addTwoNumbers</span><span class="token punctuation">(</span>ListNode<span class="token operator">*</span> l1<span class="token punctuation">,</span> ListNode<span class="token operator">*</span> l2<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+       
+      <span class="token keyword">int</span> v1 <span class="token operator">=</span><span class="token number">0</span> <span class="token punctuation">,</span> v2 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span>sum<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">,</span>carry<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>  
+        
+        ListNode<span class="token operator">*</span> ans <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">ListNode</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        ListNode<span class="token operator">*</span> now <span class="token operator">=</span>ans<span class="token punctuation">;</span>
+        
+     <span class="token keyword">while</span><span class="token punctuation">(</span> l1 <span class="token operator">||</span> l2<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+         
+         v1 <span class="token operator">=</span> l1 <span class="token operator">?</span> l1<span class="token operator">-</span><span class="token operator">&gt;</span>val <span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">;</span>
+         v2 <span class="token operator">=</span> l2 <span class="token operator">?</span> l2<span class="token operator">-</span><span class="token operator">&gt;</span>val <span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">;</span>
+         
+         sum<span class="token operator">=</span>v1<span class="token operator">+</span>v2<span class="token operator">+</span>carry<span class="token punctuation">;</span>
+         <span class="token comment">//更新 carry</span>
+         carry<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>
+         
+         <span class="token keyword">if</span><span class="token punctuation">(</span>sum <span class="token operator">&gt;=</span><span class="token number">10</span><span class="token punctuation">)</span>  
+         <span class="token punctuation">{</span>
+             sum<span class="token operator">-</span><span class="token operator">=</span><span class="token number">10</span><span class="token punctuation">;</span>
+             carry<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">;</span>
+             
+         <span class="token punctuation">}</span>
+         
+         now<span class="token operator">-</span><span class="token operator">&gt;</span>next <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">ListNode</span><span class="token punctuation">(</span>sum<span class="token punctuation">)</span><span class="token punctuation">;</span>
+         
+         now <span class="token operator">=</span> now<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+         
+         <span class="token keyword">if</span><span class="token punctuation">(</span>l1 <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>  l1<span class="token operator">=</span>l1<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+         <span class="token keyword">if</span><span class="token punctuation">(</span>l2 <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>  l2<span class="token operator">=</span>l2<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+     <span class="token punctuation">}</span>
+        <span class="token comment">//如果此时carry==1，说明还需要往前进一位</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>carry<span class="token punctuation">)</span> now<span class="token operator">-</span><span class="token operator">&gt;</span>next <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token function">ListNode</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> ans<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+        
+        
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/20190404003551848.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>创建一个新链表(-1-&gt;null)</p>
+<p>carry为标识位表示进制是否加1</p>
+

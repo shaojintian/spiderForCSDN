@@ -1,0 +1,49 @@
+<p><img src="https://img-blog.csdnimg.cn/20190406183836370.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-cpp"><span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    string <span class="token function">convert</span><span class="token punctuation">(</span>string s<span class="token punctuation">,</span> <span class="token keyword">int</span> numRows<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">int</span> size <span class="token operator">=</span> s<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token keyword">if</span><span class="token punctuation">(</span>numRows <span class="token operator">&lt;=</span> <span class="token number">1</span> <span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token keyword">return</span> s<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">int</span> gap <span class="token operator">=</span> <span class="token number">2</span><span class="token operator">*</span>numRows <span class="token operator">-</span><span class="token number">2</span><span class="token punctuation">;</span>
+        
+        string  new_str <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+        
+       <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>i <span class="token operator">&lt;</span> numRows<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span>
+       <span class="token punctuation">{</span><span class="token comment">//i == row current </span>
+           
+         <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j<span class="token operator">=</span>i <span class="token punctuation">;</span> j<span class="token operator">&lt;</span> size<span class="token punctuation">;</span> j<span class="token operator">+</span><span class="token operator">=</span>gap<span class="token punctuation">)</span>
+         <span class="token punctuation">{</span>
+             
+             new_str<span class="token operator">+</span><span class="token operator">=</span>s<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+             
+             <span class="token keyword">if</span><span class="token punctuation">(</span>i <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> i <span class="token operator">&lt;</span> numRows <span class="token operator">-</span><span class="token number">1</span> <span class="token punctuation">)</span>
+             <span class="token punctuation">{</span>
+               <span class="token keyword">int</span> t <span class="token operator">=</span> j <span class="token operator">+</span> gap <span class="token operator">-</span><span class="token number">2</span><span class="token operator">*</span>i<span class="token punctuation">;</span>
+                 <span class="token keyword">if</span><span class="token punctuation">(</span> t <span class="token operator">&lt;</span> size<span class="token punctuation">)</span>
+                new_str<span class="token operator">+</span><span class="token operator">=</span>s<span class="token punctuation">[</span>t<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                 
+             <span class="token punctuation">}</span>
+             
+             
+         <span class="token punctuation">}</span>
+           
+       <span class="token punctuation">}</span>
+        
+        
+        <span class="token keyword">return</span> new_str<span class="token punctuation">;</span>
+        
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/20190406183821328.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><img src="https://img-blog.csdnimg.cn/20190406183916423.png" alt="在这里插入图片描述"><br>
+黑色的位置规律为 +2n-2  用 gap 表示规律，j表示当前黑色位置<br>
+i表示为当前行<br>
+红色的位置规律为  j+ gap - 2*i</p>
+<p>两个循环：<br>
+外循环遍历行数，内循环遍历每一行的操作。</p>
+

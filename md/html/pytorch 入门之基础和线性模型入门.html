@@ -1,0 +1,151 @@
+<h1><a id="pytorch_1"></a><strong>一：pytorch基础</strong></h1>
+<p>1：张量：Tensor<br>
+定义为：多维度的矩阵。<br>
+例如：</p>
+<pre><code>0维度：点；    一维：向量；    二维：普通矩阵
+
+有torch.FloatTensor ;  torch.DoubleTensor; torch.IntTrnsor;
+</code></pre>
+<p>2:变量：Variable<br>
+<img src="https://img-blog.csdnimg.cn/2018112209372062.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>3：模组 torch.nn.Module</p>
+<pre><code class="prism language-python"><span class="token keyword">import</span> torch <span class="token keyword">as</span> t
+<span class="token keyword">from</span> torch <span class="token keyword">import</span> nn
+
+<span class="token keyword">class</span> <span class="token class-name">net_name</span><span class="token punctuation">(</span>nn<span class="token punctuation">.</span>Module<span class="token punctuation">)</span><span class="token punctuation">:</span><span class="token comment">#模型</span>
+	<span class="token keyword">def</span> <span class="token function">__int__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>other_arguments<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token builtin">super</span><span class="token punctuation">(</span>net_name<span class="token punctuation">,</span>self<span class="token punctuation">)</span><span class="token punctuation">.</span>__int__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+		self<span class="token punctuation">.</span>conv1<span class="token operator">=</span>nn<span class="token punctuation">.</span>Conv2d<span class="token punctuation">(</span>in_channels<span class="token punctuation">,</span>out_channels<span class="token punctuation">,</span>kernel_size<span class="token punctuation">)</span><span class="token comment">#训练器</span>
+
+	<span class="token keyword">def</span> <span class="token function">forward</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		x<span class="token operator">=</span>self<span class="token punctuation">.</span>conv1<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> x
+<span class="token comment">#loss function</span>
+criterion<span class="token operator">=</span>nn<span class="token punctuation">.</span>CrossEntropyLoss<span class="token punctuation">(</span><span class="token punctuation">)</span>
+loss<span class="token operator">=</span>criterion<span class="token punctuation">(</span>output<span class="token punctuation">,</span>target<span class="token punctuation">)</span>
+
+</code></pre>
+<h2><a id="_38"></a>二：多形式回归</h2>
+<p><mark><strong>1）理论简介</strong></mark></p>
+<p>对于一般的线性回归模型，由于该函数拟合出来的是一条直线，所以精度欠佳，我们可以考虑多项式回归来拟			合更多的模型。所谓多项式回归，其本质也是线性回归。也就是说，我们采取的方法是，提高每个属性的次数来增加维度数。比如，请看下面这样的例子：</p>
+<p>如果我们想要拟合方程：</p>
+<p>对于输入变量和输出值，我们只需要增加其平方项、三次方项系数即可。所以，我们可以设置如下参数方程：</p>
+<p>可以看到，上述方程与线性回归方程并没有本质区别。所以我们可以采用线性回归的方式来进行多项式的拟合。下面请看代码部分。</p>
+<p><mark>2）代码实现</mark></p>
+<pre><code class="prism language-python"><span class="token keyword">import</span> torch <span class="token keyword">as</span> t
+<span class="token keyword">from</span> torch <span class="token keyword">import</span> nn
+<span class="token keyword">import</span> matplotlib<span class="token punctuation">.</span>pyplot <span class="token keyword">as</span> plt
+<span class="token keyword">import</span> numpy 
+<span class="token keyword">from</span> torch<span class="token punctuation">.</span>autograd <span class="token keyword">import</span> Variable
+
+<span class="token keyword">def</span> <span class="token function">make_features</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	
+	x<span class="token operator">=</span>x<span class="token punctuation">.</span>unsqueeze<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token comment"># n -&gt; nx1 </span>
+	
+	<span class="token keyword">return</span> t<span class="token punctuation">.</span>cat<span class="token punctuation">(</span><span class="token punctuation">[</span>x <span class="token operator">**</span> i <span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token comment">#nx1--&gt;nx3</span>
+	<span class="token comment">#columns --&gt; x,x^2,x^3</span>
+	
+
+
+
+	<span class="token comment">#true fx</span>
+<span class="token keyword">def</span> <span class="token function">f</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+
+	<span class="token keyword">return</span> x<span class="token punctuation">.</span>mm<span class="token punctuation">(</span>W_target<span class="token punctuation">)</span><span class="token operator">+</span>b_target<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token comment"># nx1 </span>
+
+
+<span class="token comment">#建立（x,f(X)) pairs</span>
+<span class="token keyword">def</span> <span class="token function">get_batch</span><span class="token punctuation">(</span>batch_size<span class="token operator">=</span><span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+	random<span class="token operator">=</span>t<span class="token punctuation">.</span>randn<span class="token punctuation">(</span>batch_size<span class="token punctuation">)</span>
+	<span class="token comment"># 32个 == 1x32</span>
+	random<span class="token operator">=</span>t<span class="token punctuation">.</span>from_numpy<span class="token punctuation">(</span>numpy<span class="token punctuation">.</span>sort<span class="token punctuation">(</span>random<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	x<span class="token operator">=</span>make_features<span class="token punctuation">(</span>random<span class="token punctuation">)</span> <span class="token comment">#x--&gt;nx3</span>
+
+	y<span class="token operator">=</span>f<span class="token punctuation">(</span>x<span class="token punctuation">)</span> <span class="token comment">#nx1</span>
+
+	<span class="token keyword">return</span> Variable<span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">,</span>Variable<span class="token punctuation">(</span>y<span class="token punctuation">)</span>
+
+<span class="token comment">#Define model</span>
+<span class="token keyword">class</span> <span class="token class-name">multi_linear_model</span><span class="token punctuation">(</span>nn<span class="token punctuation">.</span>Module<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	<span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		<span class="token builtin">super</span><span class="token punctuation">(</span>multi_linear_model<span class="token punctuation">,</span>self<span class="token punctuation">)</span><span class="token punctuation">.</span>__init__<span class="token punctuation">(</span><span class="token punctuation">)</span>
+		self<span class="token punctuation">.</span>poly<span class="token operator">=</span>nn<span class="token punctuation">.</span>Linear<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token comment">#x 三维 y一维</span>
+	
+	<span class="token keyword">def</span> <span class="token function">forward</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>x<span class="token punctuation">)</span><span class="token punctuation">:</span>
+		out<span class="token operator">=</span>self<span class="token punctuation">.</span>poly<span class="token punctuation">(</span>x<span class="token punctuation">)</span>
+		<span class="token keyword">return</span> out <span class="token comment">#nx1 prediction y</span>
+
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+	<span class="token comment"># true parameter</span>
+	W_target<span class="token operator">=</span>t<span class="token punctuation">.</span>FloatTensor<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0.5</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">2.4</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">.</span>unsqueeze<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token comment"># 3-&gt;3x1</span>
+	b_target<span class="token operator">=</span>t<span class="token punctuation">.</span>FloatTensor<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0.9</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+	
+
+	model <span class="token operator">=</span>multi_linear_model<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	<span class="token comment"># 定义loss function --&gt; mean square error</span>
+	criterion<span class="token operator">=</span>nn<span class="token punctuation">.</span>MSELoss<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+	<span class="token comment">#优化器-&gt;随机梯度下降 learning rate 0.001</span>
+	optimizer<span class="token operator">=</span>t<span class="token punctuation">.</span>optim<span class="token punctuation">.</span>SGD<span class="token punctuation">(</span>model<span class="token punctuation">.</span>parameters<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>lr<span class="token operator">=</span><span class="token number">1e</span><span class="token operator">-</span><span class="token number">3</span><span class="token punctuation">)</span>
+
+	epoch<span class="token operator">=</span><span class="token number">0</span> <span class="token comment"># 记录从开始到达模型最优化的训练次数</span>
+	
+	<span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+		<span class="token comment"># Get true data</span>
+		batch_x<span class="token punctuation">,</span>batch_y<span class="token operator">=</span>get_batch<span class="token punctuation">(</span><span class="token punctuation">)</span>
+		<span class="token comment">#out -&gt; predict y</span>
+		output<span class="token operator">=</span>model<span class="token punctuation">.</span>forward<span class="token punctuation">(</span>batch_x<span class="token punctuation">)</span>
+
+		<span class="token comment">#require loss</span>
+		loss<span class="token operator">=</span>criterion<span class="token punctuation">(</span>output<span class="token punctuation">,</span>batch_y<span class="token punctuation">)</span>
+
+		print_loss<span class="token operator">=</span>loss<span class="token punctuation">.</span>item<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+		<span class="token comment">#清0 梯度 </span>
+		optimizer<span class="token punctuation">.</span>zero_grad<span class="token punctuation">(</span><span class="token punctuation">)</span>
+	
+		<span class="token comment">#反向传播-&gt;计算此时的x的梯度</span>
+		loss<span class="token punctuation">.</span>backward<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+		<span class="token comment">#梯度下降</span>
+		optimizer<span class="token punctuation">.</span>step<span class="token punctuation">(</span><span class="token punctuation">)</span>
+		epoch<span class="token operator">+=</span><span class="token number">1</span>
+
+		<span class="token comment">#达到最优</span>
+		<span class="token keyword">if</span> print_loss<span class="token operator">&lt;</span><span class="token number">1e</span><span class="token operator">-</span><span class="token number">3</span><span class="token punctuation">:</span><span class="token comment">#0.001</span>
+			<span class="token keyword">break</span><span class="token punctuation">;</span>
+	predict <span class="token operator">=</span> model<span class="token punctuation">(</span>batch_x<span class="token punctuation">)</span>
+	x <span class="token operator">=</span> batch_x<span class="token punctuation">.</span>numpy<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span>
+	plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span>x<span class="token punctuation">,</span> batch_y<span class="token punctuation">.</span>numpy<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">'rx'</span><span class="token punctuation">)</span>
+
+	predict <span class="token operator">=</span> predict<span class="token punctuation">.</span>data<span class="token punctuation">.</span>numpy<span class="token punctuation">(</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>plot<span class="token punctuation">(</span>x<span class="token punctuation">,</span> predict<span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">)</span>
+	plt<span class="token punctuation">.</span>show<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/20181122093738257.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="多项式回归"></p>
+<p>结果发现拟合的很好，损失小于0.001.</p>
+

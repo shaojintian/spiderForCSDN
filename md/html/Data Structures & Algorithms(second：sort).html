@@ -1,0 +1,169 @@
+<p>排序：对一种抽象数据类型按照其自然规律或逻辑规律排序（eg:从小到大，从前到后…)<br>
+sort：sorting is the processing of rearranging a sequence of objects so as to put them in a logical order.</p>
+<p><em><strong><strong><strong>There are three reasons to study sorting algorithms :</strong></strong></strong></em></p>
+<p>1:  A easy start to start all kinds of other algorithms<br>
+2：Exercise a ability  to compare with  other algorithms<br>
+3:   Similar techniques in other problems</p>
+<p>Seven kinds of sorting algorithms :</p>
+
+<table>
+<thead>
+<tr>
+<th>algorithm</th>
+<th>stable?</th>
+<th>in place?</th>
+<th>order of running time</th>
+<th>extra space</th>
+<th>notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>算法</td>
+<td>稳定性?</td>
+<td>是否在原数组中操作?</td>
+<td>时间复杂度</td>
+<td>额外空间大小</td>
+<td>注意</td>
+</tr>
+<tr>
+<td>selection sort</td>
+<td>no</td>
+<td>yes</td>
+<td>N^2</td>
+<td>1</td>
+<td>none</td>
+</tr>
+<tr>
+<td>insertion sort</td>
+<td>yes</td>
+<td>yes</td>
+<td>N~N^2</td>
+<td>1</td>
+<td>time depends on original order of items</td>
+</tr>
+<tr>
+<td>shellsort</td>
+<td>no</td>
+<td>yes</td>
+<td>NlogN or N^(6/5)</td>
+<td>1</td>
+<td>none</td>
+</tr>
+<tr>
+<td>quicksort</td>
+<td>no</td>
+<td>yes</td>
+<td>NlogN</td>
+<td>lgN</td>
+<td>probabilistic (概率性的)</td>
+</tr>
+<tr>
+<td>3-way quicksort</td>
+<td>no</td>
+<td>yes</td>
+<td>N~NlogN</td>
+<td>lgN</td>
+<td>probabilistic and depends on what kinds of intput source</td>
+</tr>
+<tr>
+<td>mergesort</td>
+<td>yes</td>
+<td>no</td>
+<td>NlogN</td>
+<td>N</td>
+<td>none</td>
+</tr>
+<tr>
+<td>heapsort</td>
+<td>no</td>
+<td>yes</td>
+<td>NlogN</td>
+<td>1</td>
+<td>none</td>
+</tr>
+</tbody>
+</table><p>一：selection sort</p>
+<p>It is the simplest sorting algorithms .<br>
+Its core logic is a  for-loop.</p>
+<p><strong>core codes :</strong></p>
+<pre><code>public static void sort(Comparable[] a) {
+		int N=a.length;
+		for (int i = 0; i &lt;N; i++) {
+			int min =i;
+			for(int j=i+1;j&lt;N;j++) {
+				if(less(a[j], a[min]))
+					min=j;
+			}
+			exch(a, i,min);
+		}
+	}
+</code></pre>
+<p><strong>complete  codes:</strong></p>
+<pre><code>package algorithms_4th_chapter2_1;
+
+import edu.princeton.cs.algs4.In;
+/**
+ * 2.1
+ * O(time)=N^2
+ * @author Enzo
+ *
+ */
+public class Selection {
+	
+	public static void sort(Comparable[] a) {
+		int N=a.length;
+		for (int i = 0; i &lt;N; i++) {
+			int min =i;
+			for(int j=i+1;j&lt;N;j++) {
+				if(less(a[j], a[min]))
+					min=j;
+			}
+			exch(a, i,min);
+		}
+	}
+	public static boolean less (Comparable v,Comparable w) {
+		return  v.compareTo(w)&lt;0;
+	}
+	public static void exch (Comparable[] a,int i,int j) {
+		
+		Comparable t=a[i];
+		a[i]=a[j];
+		a[j]=t;
+	}
+	public static void show(Comparable [] a) {
+		for(int i=0;i&lt;a.length;i++) {
+			System.out.print(a[i]+"");
+		}
+		System.out.println();
+	}
+	public static boolean is_sorted (Comparable [ ] a) {
+		for (int i = 0; i &lt; a.length-1; i++) {
+			if(less(a[i+1], a[i]))
+				return false;
+		}
+		return true;
+	}
+	
+
+	public static void main(String[] args) {
+			// TODO Auto-generated method stub
+		String[] a =new  In("tiny.txt").readAllStrings();
+		sort(a);
+		assert is_sorted(a);
+		show(a);
+		
+	}
+
+}
+
+</code></pre>
+<p>Nodes:<br>
+Use Comparable interface<br>
+<img src="https://img-blog.csdn.net/20181018231637263?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="在这里插入图片描述"></p>
+<p><strong>Every loop to find the minimum item in  array  and decrease  1 of needed to retrieval  array items ,also put this min item in a[i].</strong></p>
+<hr>
+<p><font color="#0ffff" size="5" face="黑体">Features:</font><br>
+<font color="#DC143C" size="5" face="黑体">1:	Running time is insensitive  to input<br>
+2: Data move is minimal</font></p>
+

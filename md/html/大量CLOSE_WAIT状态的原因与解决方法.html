@@ -1,0 +1,7 @@
+<p>原因：</p>
+<h2><a id="ServerSocket_2"></a><strong>Server端在某些异常情况时，没有关闭Socket。</strong></h2>
+<p>TCP套接字中<br>
+被动关闭的server端在接受到FIN后立即返回一个ACK报文，进入CLOSE_WAIT状态。<br>
+<strong>应用程序层面</strong>来看，会是抛出一个SOCKET.ERROR。<br>
+抛出ERROR之后如果没有closesocket(),则会处于CLOSE_WAIT</p>
+

@@ -1,0 +1,39 @@
+<p><img src="https://img-blog.csdnimg.cn/20190407033756773.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-cpp"><span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    string <span class="token function">intToRoman</span><span class="token punctuation">(</span><span class="token keyword">int</span> num<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+       string str <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+       vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span> number<span class="token punctuation">{</span><span class="token number">1000</span><span class="token punctuation">,</span><span class="token number">900</span><span class="token punctuation">,</span><span class="token number">500</span><span class="token punctuation">,</span><span class="token number">400</span><span class="token punctuation">,</span><span class="token number">100</span><span class="token punctuation">,</span><span class="token number">90</span><span class="token punctuation">,</span><span class="token number">50</span><span class="token punctuation">,</span><span class="token number">40</span><span class="token punctuation">,</span><span class="token number">10</span><span class="token punctuation">,</span><span class="token number">9</span><span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">,</span><span class="token number">1</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+       vector<span class="token operator">&lt;</span>string<span class="token operator">&gt;</span> rome<span class="token punctuation">{</span><span class="token string">"M"</span><span class="token punctuation">,</span><span class="token string">"CM"</span><span class="token punctuation">,</span><span class="token string">"D"</span><span class="token punctuation">,</span><span class="token string">"CD"</span><span class="token punctuation">,</span><span class="token string">"C"</span><span class="token punctuation">,</span><span class="token string">"XC"</span><span class="token punctuation">,</span><span class="token string">"L"</span><span class="token punctuation">,</span><span class="token string">"XL"</span><span class="token punctuation">,</span><span class="token string">"X"</span><span class="token punctuation">,</span><span class="token string">"IX"</span><span class="token punctuation">,</span><span class="token string">"V"</span><span class="token punctuation">,</span><span class="token string">"IV"</span><span class="token punctuation">,</span><span class="token string">"I"</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+        
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>number<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token keyword">while</span><span class="token punctuation">(</span>num <span class="token operator">&gt;=</span> number<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token punctuation">)</span><span class="token punctuation">{</span>
+                num<span class="token operator">-</span><span class="token operator">=</span>number<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                str<span class="token operator">+</span><span class="token operator">=</span>rome<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span>
+                
+            <span class="token punctuation">}</span>
+            
+            <span class="token keyword">if</span><span class="token punctuation">(</span>num <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        
+        <span class="token keyword">return</span> str<span class="token punctuation">;</span>
+        
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p>1:I<br>
+2:II<br>
+3:III<br>
+4:IV<br>
+5:V<br>
+6:VI<br>
+7:VII<br>
+8:VIII<br>
+9:IX<br>
+10:X<br>
+so: 5 种 I，IV，V，IX，X<br>
+各种位数均如上<br>
+从大到小遍历，如果大于某个数，就对它进行循环递减，Rome字符串递加。</p>
+<p><img src="https://img-blog.csdnimg.cn/20190407041927386.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+

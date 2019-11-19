@@ -1,0 +1,80 @@
+<p><img src="https://img-blog.csdnimg.cn/20190408171315256.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+1:扫描两次</p>
+<pre><code class="prism language-cpp"><span class="token comment">/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */</span>
+<span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    ListNode<span class="token operator">*</span> <span class="token function">removeNthFromEnd</span><span class="token punctuation">(</span>ListNode<span class="token operator">*</span> head<span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>head <span class="token operator">==</span> <span class="token constant">NULL</span> <span class="token operator">||</span> head<span class="token operator">-</span><span class="token operator">&gt;</span>next <span class="token operator">==</span><span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+            
+            ListNode <span class="token operator">*</span>node <span class="token operator">=</span> head<span class="token punctuation">;</span>
+            <span class="token keyword">int</span> size<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token keyword">while</span><span class="token punctuation">(</span>node <span class="token operator">!=</span> <span class="token constant">NULL</span> <span class="token operator">&amp;&amp;</span> node<span class="token operator">-</span><span class="token operator">&gt;</span>next <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+                node<span class="token operator">=</span>node<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+                <span class="token operator">++</span>size<span class="token punctuation">;</span>
+                
+            <span class="token punctuation">}</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span>n<span class="token operator">==</span>size<span class="token punctuation">)</span> <span class="token keyword">return</span> head<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+            node<span class="token operator">=</span>head<span class="token punctuation">;</span>
+            <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span> <span class="token punctuation">;</span> i<span class="token operator">&lt;</span>size<span class="token operator">-</span>n<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span><span class="token operator">++</span>i<span class="token punctuation">)</span>
+            <span class="token punctuation">{</span>
+                node<span class="token operator">=</span>node<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+            
+            node<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token operator">=</span>node<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+        
+            <span class="token keyword">return</span> head<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<ul>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="true" disabled=""> 先记录总共有多少个节点为size个</li>
+<li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" checked="true" disabled=""> 随后找到倒数第n个然后删掉</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20190408173511470.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+2：扫描一次,双指针，创建一个pre——head节点指向head，<br>
+倒数第N个之前的那个数字和最后一个数字规律两个相差n步，则和最后一个的next相差n+1步数。<br>
+找到规律以后往前推，创建快慢指针相差n+1步。<br>
+当快的为NULL时，则慢指针的NEXT为所要删掉的节点。</p>
+<pre><code class="prism language-cpp"><span class="token comment">/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */</span>
+<span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    ListNode<span class="token operator">*</span> <span class="token function">removeNthFromEnd</span><span class="token punctuation">(</span>ListNode<span class="token operator">*</span> head<span class="token punctuation">,</span> <span class="token keyword">int</span> n<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>head<span class="token operator">==</span><span class="token constant">NULL</span> <span class="token operator">||</span>head<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token operator">==</span><span class="token constant">NULL</span> <span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+        ListNode <span class="token operator">*</span>pre_head <span class="token operator">=</span><span class="token keyword">new</span> <span class="token function">ListNode</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        pre_head<span class="token operator">-</span><span class="token operator">&gt;</span>next <span class="token operator">=</span>head<span class="token punctuation">;</span>
+        
+        ListNode <span class="token operator">*</span>p <span class="token operator">=</span> head<span class="token punctuation">;</span>
+        ListNode <span class="token operator">*</span>q <span class="token operator">=</span>pre_head<span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>n<span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+            p<span class="token operator">=</span>p<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">while</span><span class="token punctuation">(</span>p <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            p<span class="token operator">=</span>p<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+            q<span class="token operator">=</span>q<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        
+        q<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token operator">=</span>q<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+        
+        <span class="token keyword">return</span> pre_head<span class="token operator">-</span><span class="token operator">&gt;</span>next<span class="token punctuation">;</span>
+        
+        
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/20190408180901360.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+

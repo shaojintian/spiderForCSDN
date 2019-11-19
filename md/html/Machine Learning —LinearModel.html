@@ -1,0 +1,58 @@
+<h2><a id="Machine_Learning_LinearModel_2"></a>Machine Learning —LinearModel</h2>
+<p>Supervised Learning:<br>
+Basic topics are Classification and Regression.</p>
+<p>Classification:</p>
+<p>About linear model, it includes LinearSVC , LogisticRegression(a classifier not a regressor)， GaussianNaiveBayesClassifier (GuNBC), BernoulliNBC, MultinomialNBC , Decision Trees,Random Forests</p>
+<p>First model LinearSVC:</p>
+<p>parameters includes :</p>
+<p>Regularization class: L1 or L2 .<br>
+L1 norm can decrease the coefficients to zero .But L2 can’t do that. L2 norm only can try to decrease the coefficients to close to zero.</p>
+<p>So L1 norm can select the numbers of features , but L2 can’t.</p>
+<p>Then,L1 style can increase the interpretability of this model,but lose some important features.</p>
+<p>L2 maybe be pollued by meaningless features.</p>
+<p>2.C:(learning rate)</p>
+<p>C is about restrictive ability. If C is small , coefficients and intercept is be restricted to close to zero (whether it can be explicitly zero depends on L1 or L2)</p>
+<p>else if C is high, restrictive ability is low.</p>
+<p>Second model: LinearRegression</p>
+<p>parameters :</p>
+<p>1:Regularization class: L1 or L2 .</p>
+<p>This is the same as above the first line.</p>
+<p>2:alpha(learning rate)</p>
+<p>alpha is opposite to C .If alpha is high , coefficients and intercept is be restricted to close to zero (whether it can be explicitly zero depends on L1 or L2)</p>
+<p>else if alpha is low, restrictive ability is low.</p>
+<p>Third model : Gussian Naive Bayes Classifier</p>
+<p>paramerter:</p>
+<p>1:alpha</p>
+<p>Fourth model : Bernoulli Naive Bayes Classifier</p>
+<p>paramerter:</p>
+<p>1:alpha (controls the complexity of model)</p>
+<p>ability:</p>
+<p>Increase the smoothing performance of model via adding virtual many data points to datasets . Virtual data points contains all positive features .</p>
+<p>When increase the alpha , the model will be smoother. So it will decrease the complexity of model . When decrease it , the model will be more complex.</p>
+<p>Fourth model : Bernoulli Naive Bayes Classifier</p>
+<p>paramerter:</p>
+<p>1:alpha (controls the complexity of model) (It is the same as BernoulliNBC)</p>
+<p>ability:</p>
+<p>Increase the smoothing performance of model via adding virtual many data points to datasets . Virtual data points contains all positive features .</p>
+<p>When increase the alpha , the model will be smoother. So it will decrease the complexity of model . When decrease it , the model will be more complex.</p>
+<p>Fifth model: Decision Trees</p>
+<p>parameters:</p>
+<p>Advantages:</p>
+<p>1: Easily Visualize .</p>
+<p>Generate visualized decision trees to help non-experts to understand this model.</p>
+<p>2:less influence about data or features types</p>
+<p>Due to every feature is been processed separately , so whatever the data type is binary or continuous .</p>
+<p>Disadvantages :</p>
+<p>1:poor generalization ability</p>
+<p>Easy to overfit ,even it has used pre-pruning. Because of it ,we usually to use ensembles of decision trees to decrease this influence based on decision trees(such as Random Forests and Gradient Boosted Decision Trees)</p>
+<p>Sixth model :Random Forests:</p>
+<p>Parameters:</p>
+<p>1:n_estimator</p>
+<p>decide the numbers of decision trees .</p>
+<p>2:max_features</p>
+<p>decide the max numbers of features .</p>
+<p>Preprocessing:</p>
+<p>For dataset:</p>
+<p>Bootstrap Sample(自动采样）：</p>
+<p>To explain it , if we have 100 data nodes ,we select randomly 100 times from this dataset to generate a new dataset which is as big as original dataset , after every time selection ,we don’t reduce the data node from original dataset .Clear?</p>
+

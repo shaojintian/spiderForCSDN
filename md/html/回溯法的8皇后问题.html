@@ -1,0 +1,60 @@
+<pre><code class="prism language-java"><span class="token keyword">package</span> backtrack<span class="token punctuation">;</span>
+
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">Queens_demo</span> <span class="token punctuation">{</span>
+	<span class="token keyword">static</span> <span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> result <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">int</span><span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">;</span><span class="token comment">// 全局或成员变量, 下标表示行, 值表示 queen 存储在哪一列</span>
+	<span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">cal8queens</span><span class="token punctuation">(</span><span class="token keyword">int</span> row<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">// 调用方式：cal8queens(0);</span>
+	  <span class="token keyword">if</span> <span class="token punctuation">(</span>row <span class="token operator">==</span> <span class="token number">8</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">// 8 个棋子都放置好了，打印结果</span>
+	    <span class="token function">printQueens</span><span class="token punctuation">(</span>result<span class="token punctuation">)</span><span class="token punctuation">;</span>
+	    <span class="token keyword">return</span><span class="token punctuation">;</span> <span class="token comment">// 8 行棋子都放好了，已经没法再往下递归了，所以就 return</span>
+	  <span class="token punctuation">}</span>
+	  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> column <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> column <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> <span class="token operator">++</span>column<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">// 每一行都有 8 中放法</span>
+	    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isOk</span><span class="token punctuation">(</span>row<span class="token punctuation">,</span> column<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">// 有些放法不满足要求</span>
+	      result<span class="token punctuation">[</span>row<span class="token punctuation">]</span> <span class="token operator">=</span> column<span class="token punctuation">;</span> <span class="token comment">// 第 row 行的棋子放到了 column 列</span>
+	      <span class="token function">cal8queens</span><span class="token punctuation">(</span>row<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// 考察下一行</span>
+	    <span class="token punctuation">}</span>
+	  <span class="token punctuation">}</span>
+	<span class="token punctuation">}</span>
+
+	<span class="token keyword">private</span> <span class="token keyword">static</span>  <span class="token keyword">boolean</span> <span class="token function">isOk</span><span class="token punctuation">(</span><span class="token keyword">int</span> row<span class="token punctuation">,</span> <span class="token keyword">int</span> column<span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token comment">// 判断 row 行 column 列放置是否合适</span>
+	  <span class="token keyword">int</span> leftup <span class="token operator">=</span> column <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">,</span> rightup <span class="token operator">=</span> column <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+	  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> row<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">;</span> <span class="token operator">--</span>i<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">// 逐行往上考察每一行</span>
+	    <span class="token keyword">if</span> <span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> column<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span> <span class="token comment">// 第 i 行的 column 列有棋子吗？</span>
+	    <span class="token keyword">if</span> <span class="token punctuation">(</span>leftup <span class="token operator">&gt;=</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">// 考察左上对角线：第 i 行 leftup 列有棋子吗？</span>
+	      <span class="token keyword">if</span> <span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> leftup<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+	    <span class="token punctuation">}</span>
+	    <span class="token keyword">if</span> <span class="token punctuation">(</span>rightup <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">// 考察右上对角线：第 i 行 rightup 列有棋子吗？</span>
+	      <span class="token keyword">if</span> <span class="token punctuation">(</span>result<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">==</span> rightup<span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>
+	    <span class="token punctuation">}</span>
+	    <span class="token operator">--</span>leftup<span class="token punctuation">;</span> <span class="token operator">++</span>rightup<span class="token punctuation">;</span>
+	  <span class="token punctuation">}</span>
+	  <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+	<span class="token punctuation">}</span>
+
+	<span class="token keyword">private</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">printQueens</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">[</span><span class="token punctuation">]</span> result<span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">// 打印出一个二维矩阵</span>
+		System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token string">"result:"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> row <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> row <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> <span class="token operator">++</span>row<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> column <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> column <span class="token operator">&lt;</span> <span class="token number">8</span><span class="token punctuation">;</span> <span class="token operator">++</span>column<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+	      <span class="token keyword">if</span> <span class="token punctuation">(</span>result<span class="token punctuation">[</span>row<span class="token punctuation">]</span> <span class="token operator">==</span> column<span class="token punctuation">)</span> System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"Q "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	      <span class="token keyword">else</span> System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"* "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	    <span class="token punctuation">}</span>
+	    System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	  <span class="token punctuation">}</span>
+	  System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">}</span>
+
+	<span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">main</span><span class="token punctuation">(</span>String<span class="token punctuation">[</span><span class="token punctuation">]</span> args<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+		<span class="token comment">// TODO Auto-generated method stub</span>
+		<span class="token function">cal8queens</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">}</span>
+
+<span class="token punctuation">}</span>
+
+</code></pre>
+<p>每次递归返回都会返回到上一层。</p>
+<p>如果递归不到下一层，就会在当前层继续向后查询。</p>
+<p>只有能填完整后也就是<br>
+<img src="https://img-blog.csdnimg.cn/20190514173324347.png" alt="在这里插入图片描述"><br>
+就会输出一次结果。</p>
+<p>然后继续根据状态空间树做DFS知道输出所有结果</p>
+

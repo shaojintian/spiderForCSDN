@@ -1,0 +1,53 @@
+<p><img src="https://img-blog.csdnimg.cn/20190407025819200.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>
+解法一：暴力法</p>
+<pre><code class="prism language-cpp"><span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token keyword">int</span> <span class="token function">maxArea</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> height<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        
+        <span class="token keyword">int</span> max<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>
+        
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">&lt;</span> height<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            
+           <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> j <span class="token operator">=</span> i<span class="token operator">+</span><span class="token number">1</span> <span class="token punctuation">;</span>j<span class="token operator">&lt;</span>height<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token operator">++</span>j<span class="token punctuation">)</span>
+           <span class="token punctuation">{</span>
+               <span class="token keyword">int</span> minOfTwo<span class="token operator">=</span>height<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token operator">&lt;</span>height<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">?</span> height<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">:</span> height<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+               
+               <span class="token keyword">int</span> tem<span class="token operator">=</span>minOfTwo <span class="token operator">*</span> <span class="token punctuation">(</span>j<span class="token operator">-</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+               <span class="token keyword">if</span><span class="token punctuation">(</span>max<span class="token operator">&lt;</span>tem<span class="token punctuation">)</span> max <span class="token operator">=</span> tem<span class="token punctuation">;</span>
+               
+           <span class="token punctuation">}</span>
+            
+        <span class="token punctuation">}</span>
+        
+        <span class="token keyword">return</span> max<span class="token punctuation">;</span>
+        
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/20190407032113963.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>2：解法2----贪心</p>
+<p>双指针移动-----&gt;左右双指针，减少的距离换更长的长度</p>
+<pre><code class="prism language-cpp"><span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    <span class="token keyword">int</span> <span class="token function">maxArea</span><span class="token punctuation">(</span>vector<span class="token operator">&lt;</span><span class="token keyword">int</span><span class="token operator">&gt;</span><span class="token operator">&amp;</span> height<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        
+        <span class="token keyword">int</span> ans<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">,</span>i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">,</span>j<span class="token operator">=</span>height<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+        
+        <span class="token keyword">while</span><span class="token punctuation">(</span>i<span class="token operator">&lt;</span>j<span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>   <span class="token keyword">int</span> tmp <span class="token operator">=</span> <span class="token function">min</span><span class="token punctuation">(</span>height<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span>height<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token punctuation">(</span>j<span class="token operator">-</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            ans <span class="token operator">=</span> <span class="token function">max</span><span class="token punctuation">(</span>ans<span class="token punctuation">,</span>tmp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            
+            <span class="token keyword">if</span><span class="token punctuation">(</span> height<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">&lt;</span> height<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span>
+                i<span class="token operator">++</span><span class="token punctuation">;</span>
+            <span class="token keyword">else</span> j<span class="token operator">--</span><span class="token punctuation">;</span>
+            
+        <span class="token punctuation">}</span>
+        
+        <span class="token keyword">return</span> ans<span class="token punctuation">;</span>
+        
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/20190407033652832.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+

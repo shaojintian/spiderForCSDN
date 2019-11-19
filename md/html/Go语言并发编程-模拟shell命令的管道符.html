@@ -1,0 +1,93 @@
+<p><strong>simulate  shell command "ps aux  | grep  QQ"</strong></p>
+<p>进程间通信（即IPC问题）是并发中最关键，重要的问题。</p>
+<p>基本有三个大的解决方式</p>
+<p>1：基于通信</p>
+<ul>
+<li>管道pipe</li>
+<li>消息队列 message queue</li>
+</ul>
+<p>2：基于信号（唯一的异步I/O）</p>
+<ul>
+<li>信号 signal</li>
+</ul>
+<p>3:  基于同步</p>
+<ul>
+<li>信号量 semaphore</li>
+</ul>
+<p>现在介绍一种最简单的方式 ： <strong>管道</strong></p>
+<p>eg：shell 中    “ |”    就是一个管道符</p>
+<p>管道符是一种半双工的通信方式 ， 即一个进程的输出作为另一个进程的输入</p>
+<p>管道符的实现如下</p>
+<pre><code class="prism language-go">
+<span class="token comment">//copyright by sjt@hnu.edu.cn</span>
+<span class="token keyword">package</span> main
+
+<span class="token comment">// simulate  shell command "ps aux  | grep  QQ"</span>
+<span class="token keyword">import</span> <span class="token punctuation">(</span>
+	<span class="token string">"bytes"</span>
+	<span class="token string">"fmt"</span>
+	<span class="token string">"log"</span>
+	<span class="token string">"os/exec"</span>
+
+
+
+<span class="token punctuation">)</span>
+
+
+
+<span class="token keyword">func</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+
+	cmd1 <span class="token operator">:=</span> exec<span class="token punctuation">.</span><span class="token function">Command</span><span class="token punctuation">(</span><span class="token string">"ps"</span><span class="token punctuation">,</span><span class="token string">"aux"</span><span class="token punctuation">)</span>
+	cmd2 <span class="token operator">:=</span> exec<span class="token punctuation">.</span><span class="token function">Command</span><span class="token punctuation">(</span><span class="token string">"grep"</span><span class="token punctuation">,</span><span class="token string">"QQ"</span><span class="token punctuation">)</span>
+
+
+	<span class="token keyword">var</span> outbuf1   bytes<span class="token punctuation">.</span>Buffer
+
+	cmd1<span class="token punctuation">.</span>Stdout <span class="token operator">=</span> <span class="token operator">&amp;</span>outbuf1
+
+	<span class="token keyword">if</span> err <span class="token operator">:=</span> cmd1<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatalln</span><span class="token punctuation">(</span><span class="token string">"Error : cmd1 start err "</span><span class="token punctuation">,</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+
+	<span class="token keyword">if</span> err <span class="token operator">:=</span> cmd1<span class="token punctuation">.</span><span class="token function">Wait</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatalln</span><span class="token punctuation">(</span><span class="token string">"Error : cmd1 can not wait"</span><span class="token punctuation">,</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+
+
+	<span class="token keyword">var</span> outbuf2  bytes<span class="token punctuation">.</span>Buffer
+
+	cmd2<span class="token punctuation">.</span>Stdin <span class="token operator">=</span> <span class="token operator">&amp;</span>outbuf1
+
+	cmd2<span class="token punctuation">.</span>Stdout <span class="token operator">=</span> <span class="token operator">&amp;</span>outbuf2
+
+	<span class="token keyword">if</span> err <span class="token operator">:=</span> cmd2<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatalln</span><span class="token punctuation">(</span><span class="token string">"Error : cmd2 start err "</span><span class="token punctuation">,</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+
+	<span class="token keyword">if</span> err <span class="token operator">:=</span> cmd2<span class="token punctuation">.</span><span class="token function">Wait</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> err <span class="token operator">!=</span> <span class="token boolean">nil</span> <span class="token punctuation">{</span>
+		log<span class="token punctuation">.</span><span class="token function">Fatalln</span><span class="token punctuation">(</span><span class="token string">"Error : cmd2 can not wait"</span><span class="token punctuation">,</span>err<span class="token punctuation">)</span>
+	<span class="token punctuation">}</span>
+
+
+	fmt<span class="token punctuation">.</span><span class="token function">Println</span><span class="token punctuation">(</span>outbuf2<span class="token punctuation">.</span><span class="token function">String</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+
+<span class="token punctuation">}</span>
+
+</code></pre>
+<p>os/exec  是go的标准i/o包<br>
+代码中<br>
+第39行和第41行</p>
+<pre><code>cmd2.Stdin = &amp;outbuf1
+
+cmd2.Stdout = &amp;outbuf2
+</code></pre>
+<p>表明了cmd1的输出作为cmd2的输入实现管道符的功能</p>
+<p>最后一行</p>
+<pre><code>fmt.Println(outbuf2.String())
+转换为string类型显示在终端shell中
+</code></pre>
+<p>结果如下：完全模拟了ps aux | grep  QQ   的shell 命令<br>
+<img src="https://img-blog.csdnimg.cn/20190610200317844.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+

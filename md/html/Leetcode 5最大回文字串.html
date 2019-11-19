@@ -1,0 +1,45 @@
+<p><img src="https://img-blog.csdnimg.cn/20190404032343593.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<pre><code class="prism language-cpp"><span class="token keyword">class</span> <span class="token class-name">Solution</span> <span class="token punctuation">{</span>
+<span class="token keyword">public</span><span class="token operator">:</span>
+    string <span class="token function">longestPalindrome</span><span class="token punctuation">(</span>string s<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">int</span> n<span class="token operator">=</span>s<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token keyword">if</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span><span class="token function">size</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span><span class="token number">2</span> <span class="token punctuation">)</span> <span class="token keyword">return</span> s<span class="token punctuation">;</span>
+        
+        <span class="token keyword">int</span> left<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">,</span>right<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">,</span>max_length<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span>start<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>
+        
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> n<span class="token punctuation">;</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+          left <span class="token operator">=</span> i<span class="token punctuation">,</span>right <span class="token operator">=</span>i<span class="token punctuation">;</span>
+            
+          <span class="token keyword">while</span><span class="token punctuation">(</span>right<span class="token operator">&lt;</span>n<span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&amp;&amp;</span> s<span class="token punctuation">[</span>right<span class="token punctuation">]</span><span class="token operator">==</span>s<span class="token punctuation">[</span>right<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span> 
+              <span class="token operator">++</span>right<span class="token punctuation">;</span>
+        
+          i<span class="token operator">=</span>right<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">;</span>
+         
+            
+          <span class="token comment">//从中心扩展</span>
+          <span class="token keyword">while</span><span class="token punctuation">(</span>right <span class="token operator">&lt;</span>n<span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&amp;&amp;</span> left <span class="token operator">&gt;</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> s<span class="token punctuation">[</span>left<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token operator">==</span>s<span class="token punctuation">[</span>right<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+          <span class="token punctuation">{</span>
+              <span class="token operator">--</span>left<span class="token punctuation">;</span>
+              <span class="token operator">++</span>right<span class="token punctuation">;</span>
+             
+          <span class="token punctuation">}</span>
+            
+            <span class="token keyword">if</span><span class="token punctuation">(</span>max_length <span class="token operator">&lt;</span> right <span class="token operator">-</span> left <span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span>
+            <span class="token punctuation">{</span>
+                max_length <span class="token operator">=</span> right <span class="token operator">-</span> left <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+                start <span class="token operator">=</span> left<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        
+        
+        
+        <span class="token keyword">return</span> s<span class="token punctuation">.</span><span class="token function">substr</span><span class="token punctuation">(</span>start<span class="token punctuation">,</span>max_length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<p><img src="https://img-blog.csdnimg.cn/20190404032254882.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM5ODcxNDk4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>此为中心扩展法，自里向外搜索回文子串</p>
+

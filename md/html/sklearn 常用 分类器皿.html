@@ -1,0 +1,55 @@
+<h3><a id="KNN_Classifier_0"></a>KNN Classifier</h3>
+<p>from sklearn.neighbors import KNeighborsClassifier</p>
+<p>clf = KNeighborsClassifier()<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="Logistic_Regression_Classifier_7"></a>Logistic Regression Classifier</h3>
+<p>from sklearn.linear_model import LogisticRegression</p>
+<p>clf = LogisticRegression(penalty=‘l2’)<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="Random_Forest_Classifier_14"></a>Random Forest Classifier</h3>
+<p>from sklearn.ensemble import RandomForestClassifier</p>
+<p>clf = RandomForestClassifier(n_estimators=8)<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="Decision_Tree_Classifier_21"></a>Decision Tree Classifier</h3>
+<p>from sklearn import tree</p>
+<p>clf = tree.DecisionTreeClassifier()<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="GBDTGradient_Boosting_Decision_Tree_Classifier_28"></a>GBDT(Gradient Boosting Decision Tree) Classifier</h3>
+<p>from sklearn.ensemble import GradientBoostingClassifier</p>
+<p>clf = GradientBoostingClassifier(n_estimators=200)<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<p>###AdaBoost Classifier<br>
+from sklearn.ensemble import  AdaBoostClassifier</p>
+<p>clf = AdaBoostClassifier()<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="GaussianNB_42"></a>GaussianNB</h3>
+<p>from sklearn.naive_bayes import GaussianNB</p>
+<p>clf = GaussianNB()<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="Linear_Discriminant_Analysis_49"></a>Linear Discriminant Analysis</h3>
+<p>from sklearn.discriminant_analysis import LinearDiscriminantAnalysis</p>
+<p>clf = LinearDiscriminantAnalysis()<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="Quadratic_Discriminant_Analysis_56"></a>Quadratic Discriminant Analysis</h3>
+<p>from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis</p>
+<p>clf = QuadraticDiscriminantAnalysis()<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="SVM_Classifier_63"></a>SVM Classifier</h3>
+<p>from sklearn.svm import SVC</p>
+<p>clf = SVC(kernel=‘rbf’, probability=True)<br>
+clf.fit(train_x, train_y)</p>
+<hr>
+<h3><a id="Multinomial_Naive_Bayes_Classifier_70"></a>Multinomial Naive Bayes Classifier</h3>
+<p>from sklearn.naive_bayes import MultinomialNB</p>
+<p>clf = MultinomialNB(alpha=0.01)<br>
+clf.fit(train_x, train_y)</p>
+
